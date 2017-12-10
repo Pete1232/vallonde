@@ -23,6 +23,7 @@ object ProjectDependencies {
 
   private val it = (test_common ++ Seq(
     "com.amazonaws" % "DynamoDBLocal" % "[1.11,2.0)",
+    "com.almworks.sqlite4java" % "sqlite4java" % "1.0.392",
     "io.findify" %% "s3mock" % "0.2.4"
   )).map(_ % IntegrationTest)
 
