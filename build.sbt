@@ -1,4 +1,5 @@
 lazy val root = Project(APP_NAME, file("."))
+  .enablePlugins(SbtTwirl)
   .configs(IntegrationTest)
   .settings(
     name := APP_NAME,
