@@ -1,12 +1,11 @@
-package repositories.character
+package repositories.character.models
 
 import com.amazonaws.services.dynamodbv2.model.{AttributeAction, AttributeValue, AttributeValueUpdate}
-import repositories.character.CharacterModel.AttributeNames.LEVEL
-
-import scala.language.implicitConversions
+import repositories.character.models.CharacterModel.AttributeNames._
 
 case class CharacterModel(name: String,
-                          level: Int) {
+                          level: Int,
+                          stats: StatsModel) {
 
   val asAttributeValueUpdate: java.util.Map[String, AttributeValueUpdate] = {
 
@@ -18,28 +17,34 @@ case class CharacterModel(name: String,
         .withAction(AttributeAction.PUT)
     }
 
-    Map(LEVEL -> update(new AttributeValue().withN(level.toString)))
+    Map(
+      LEVEL -> update(new AttributeValue().withN(level.toString)),
+      STATS -> update(new AttributeValue().withM(stats.asAttributeValues))
+    )
   }
 }
 
 object CharacterModel {
 
-  object AttributeNames {
-    val NAME = "name"
-    val LEVEL = "level"
-  }
-
-  implicit def fromJavaMap(inputMap: java.util.Map[String, AttributeValue]): Option[CharacterModel] = {
+  def fromJavaMap(inputMap: java.util.Map[String, AttributeValue]): Option[CharacterModel] = {
     import AttributeNames._
 
     import scala.collection.convert.ImplicitConversionsToScala._
 
     val name = inputMap.toMap.get(NAME).map(_.getS)
     val level = inputMap.toMap.get(LEVEL).map(_.getN.toInt)
+    val stats = inputMap.toMap.get(STATS).map(_.getM).flatMap(StatsModel.fromJavaMap)
 
     for {
       n <- name
       l <- level
-    } yield CharacterModel(n, l)
+      s <- stats
+    } yield CharacterModel(n, l, s)
+  }
+
+  object AttributeNames {
+    val NAME = "name"
+    val LEVEL = "level"
+    val STATS = "stats"
   }
 }

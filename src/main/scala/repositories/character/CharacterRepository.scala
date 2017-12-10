@@ -2,6 +2,7 @@ package repositories.character
 
 import com.amazonaws.services.dynamodbv2.model._
 import components.character.repositories.CharacterUpdater
+import repositories.character.models.CharacterModel
 
 import scala.collection.convert.ImplicitConversionsToJava._
 import scala.concurrent.{ExecutionContext, Future}
