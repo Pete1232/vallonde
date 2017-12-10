@@ -8,21 +8,23 @@ class CharacterRepositoryIT extends IntegrationSuite {
 
   lazy val repository = new CharacterRepository
 
-  "Calling get on the character table" must {
-    "return the name of the character if an item exists" in {
+  "Calling the update character model method" must {
+    "create a new character if one doesn't exist already" in {
+      val character = CharacterModel("bob", 20)
 
-      val expectedName = "bob"
-
-      repository.createTable()
-        .flatMap(_ => repository.updateRecord())
-        .flatMap(_ => repository.getRecord)
-        .map(_ mustBe Some(expectedName))
+      repository.createCharacterTable()
+        .flatMap(_ => repository.updateRecordByName(character.name, character))
+        .flatMap(_ => repository.getRecordByName(character.name))
+        .map(_ mustBe Some(character))
     }
-    "return None if the item does not exist" in {
+    "update an existing character with a new level" in {
+      val character = CharacterModel("bob", 20)
+      val updatedCharacter = CharacterModel("bob", 21)
 
-      repository.createTable()
-        .flatMap(_ => repository.getRecord)
-        .map(_ mustBe None)
+      repository.createCharacterTable()
+        .flatMap(_ => repository.updateRecordByName(character.name, updatedCharacter))
+        .flatMap(_ => repository.getRecordByName(character.name))
+        .map(_ mustBe Some(updatedCharacter))
     }
   }
 }
