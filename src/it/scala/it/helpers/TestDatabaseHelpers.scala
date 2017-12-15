@@ -7,8 +7,9 @@ import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.{BeforeAndAfterEach, Suite}
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 
-trait LocalDynamoDB extends BeforeAndAfterEach {
+trait TestDatabaseHelpers extends BeforeAndAfterEach {
   self: Suite =>
 
   lazy val config: Config = ConfigFactory.load()
@@ -16,9 +17,9 @@ trait LocalDynamoDB extends BeforeAndAfterEach {
   lazy val dynamoClient: AmazonDynamoDB = {
 
     val configBase = "akka.stream.alpakka.dynamodb"
-    val host = config.getString(s"$configBase.host")
-    val port = config.getString(s"$configBase.port")
-    val region = config.getString(s"$configBase.region")
+    val host: String = config.getString(s"$configBase.host")
+    val port: String = config.getString(s"$configBase.port")
+    val region: String = config.getString(s"$configBase.region")
 
     val clientConfig = new ClientConfiguration()
     clientConfig.setConnectionTimeout(500)
@@ -29,20 +30,20 @@ trait LocalDynamoDB extends BeforeAndAfterEach {
       .build()
   }
 
-  override def beforeEach(): Unit = {
-    super.beforeEach()
-    cleanUpDatabase()
-  }
-
   private def cleanUpDatabase(): Unit = {
     try {
-      val tables = dynamoClient.listTables().getTableNames.asScala
+      val tables: mutable.Buffer[String] = dynamoClient.listTables().getTableNames.asScala
       for (table <- tables) {
         dynamoClient.deleteTable(table).toString
       }
     } catch {
       case e: Throwable => cancel(e)
     }
+  }
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+    cleanUpDatabase()
   }
 
   override def afterEach(): Unit = {

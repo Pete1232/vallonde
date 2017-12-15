@@ -1,11 +1,11 @@
 package repositories.character
 
-import it.helpers.IntegrationSuite
+import it.helpers.DatabaseTestSuite
 import org.scalatest.DoNotDiscover
 import repositories.character.models.{CharacterModel, StatsModel}
 
 @DoNotDiscover
-class CharacterRepositoryIT extends IntegrationSuite {
+class CharacterRepositoryIT extends DatabaseTestSuite {
 
   lazy val repository = new CharacterRepository
 
@@ -21,7 +21,7 @@ class CharacterRepositoryIT extends IntegrationSuite {
         .map(_ mustBe Some(defaultCharacter))
     }
     "update an existing character with a new level and return the updated model" in {
-      val updatedCharacter = defaultCharacter.copy(level = 2)
+      val updatedCharacter: CharacterModel = defaultCharacter.copy(level = 2)
 
       repository.createCharacterTable()
         .flatMap(_ => repository.updateRecordByName(defaultCharacter.name, updatedCharacter))

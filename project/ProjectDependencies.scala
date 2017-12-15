@@ -4,8 +4,8 @@ object ProjectDependencies {
 
   private val aws_sdk = Seq(
     "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
-    "com.lightbend.akka" %% "akka-stream-alpakka-dynamodb" % "0.15",
-    "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "0.15"
+    "com.lightbend.akka" %% "akka-stream-alpakka-dynamodb" % "0.15.1",
+    "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "0.15.1"
   )
 
   private val compile = aws_sdk ++ Seq(
@@ -22,9 +22,6 @@ object ProjectDependencies {
   )).map(_ % Test)
 
   private val it = (test_common ++ Seq(
-    "com.amazonaws" % "DynamoDBLocal" % "[1.11,2.0)",
-    "com.almworks.sqlite4java" % "sqlite4java" % "1.0.392",
-    "io.findify" %% "s3mock" % "0.2.4"
   )).map(_ % IntegrationTest)
 
   def apply(): Seq[ModuleID] = compile ++ test ++ it
