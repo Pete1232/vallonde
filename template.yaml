@@ -13,7 +13,7 @@ Resources:
                         "dynamodb:*"
                     ],
                     "Effect": "Allow",
-                    "Resource": !Ref CharactersTable
+                    "Resource": "*"
                 }
             ]
         }
@@ -35,12 +35,12 @@ Resources:
                         "logs:CreateLogStream",
                         "logs:PutLogEvents"
                     ],
-                    "Resource": !Ref CharactersTable
+                    "Resource": "*"
                 },
                 {
                     "Effect": "Allow",
                     "Action": "s3:*",
-                    "Resource": !Ref CharacterPageBucket
+                    "Resource": "*"
                 }
             ]
         }

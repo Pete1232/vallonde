@@ -1,0 +1,13 @@
+version: 0.2
+
+phases:
+  build:
+    commands:
+      - sbt clean test it:test
+  post_build:
+    commands:
+      - sbt assembly
+
+artifacts:
+  files:
+    - target/scala-2.12/vallonde-assembly-999-SNAPSHOT.jar
