@@ -1,0 +1,139 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: 'AWS::Serverless-2016-10-31'
+Resources:
+  UpdateDatabaseRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Action": [
+                        "dynamodb:*"
+                    ],
+                    "Effect": "Allow",
+                    "Resource": !Ref CharactersTable
+                }
+            ]
+        }
+  UpdateS3Role:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": [
+                        "dynamodb:DescribeStream",
+                        "dynamodb:GetRecords",
+                        "dynamodb:GetShardIterator",
+                        "dynamodb:ListStreams",
+                        "logs:CreateLogGroup",
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents"
+                    ],
+                    "Resource": !Ref CharactersTable
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": "s3:*",
+                    "Resource": !Ref CharacterPageBucket
+                }
+            ]
+        }
+  CharactersTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: name
+          AttributeType: S
+        - AttributeName: level
+          AttributeType: N
+      KeySchema:
+        - AttributeName: name
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      TableName: character
+      StreamViewType: KEYS_ONLY
+      Tags:
+        - Key: name
+          Value: character_table
+        - Key: application
+          Value: vallonde
+  CharacterPageBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: PublicRead
+      BucketName: vallonde_characters
+      LifecycleConfiguration:
+        Rules:
+          - NoncurrentVersionExpirationInDays: 15
+            Status: Enabled
+      VersioningConfiguration: Enabled
+      WebsiteConfiguration:
+        ErrorDocument: error.html
+        IndexDocument: index.html
+      Tags:
+        - Key: name
+          Value: character_bucket
+        - Key: application
+          Value: vallonde
+  CharacterPageAssetsBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: Private
+      BucketName: vallonde_characters_assets
+      CorsConfiguration:
+        AllowedMethods:
+          - GET
+        AllowedOrigins:
+          - 'http://*'  #TODO add correct origin when known
+      Tags:
+        - Key: name
+          Value: character_bucket_assets
+        - Key: application
+          Value: vallonde
+  UpdateCharacterFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: UpdateCharacter
+      Description: Updates the current model of the character stored in DynamoDB
+      Handler: components.updatecharacter.UpdateCharacterHandler
+      Role: !Ref UpdateDatabaseRole
+      Events:
+        UpdateCharacter:
+            Type: Api
+            Properties:
+              Path: /character
+              Method: POST
+      CodeUri: ./target/scala-2.12/vallonde-assembly-999-SNAPSHOT.jar #TODO needs to be the s3 uri
+      Runtime: java8
+      AutoPublishAlias: DEV
+      Tags:
+        name: character_function_update
+        application: vallonde
+  UpdateCharacterModelFunction:
+      Type: 'AWS::Serverless::Function'
+      Properties:
+        FunctionName: UpdateCharacterModel
+        Description: Replaces the model for the character name stored in Amazon S3 with one provided by the client
+        Handler: components.updatecharacter.UpdateCharacterHandler  # TODO correct handler
+        Role: !Ref UpdateS3Role
+        Events:
+          UpdateCharacter:
+              Type: DynamoDB
+              Properties:
+                Stream: TODO # TODO
+                StartingPosition: LATEST
+                BatchSize: 10
+        CodeUri: ./target/scala-2.12/vallonde-assembly-999-SNAPSHOT.jar #TODO needs to be the s3 uri
+        Runtime: java8
+        AutoPublishAlias: DEV
+        Tags:
+          name: character_function_update_model
+          application: vallonde

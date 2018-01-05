@@ -9,6 +9,7 @@ object ProjectDependencies {
   )
 
   private val compile = aws_sdk ++ Seq(
+    "org.scala-lang" % "scala-library" % "2.12.4",
     "org.scalactic" %% "scalactic" % "3.0.4"
   )
 
