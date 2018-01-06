@@ -59,7 +59,8 @@ Resources:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1
       TableName: character
-      StreamViewType: KEYS_ONLY
+      StreamSpecification:
+        StreamViewType: KEYS_ONLY
       Tags:
         - Key: name
           Value: character_table
@@ -74,7 +75,8 @@ Resources:
         Rules:
           - NoncurrentVersionExpirationInDays: 15
             Status: Enabled
-      VersioningConfiguration: Enabled
+      VersioningConfiguration:
+        Status: Enabled
       WebsiteConfiguration:
         ErrorDocument: error.html
         IndexDocument: index.html
@@ -89,10 +91,9 @@ Resources:
       AccessControl: Private
       BucketName: vallonde_assets
       CorsConfiguration:
-        AllowedMethods:
-          - GET
-        AllowedOrigins:
-          - 'http://*'  #TODO add correct origin when known
+        CorsRules:
+          - AllowedMethods: [GET]
+            AllowedOrigins: ['http://*']  #TODO add correct origin when known
       Tags:
         - Key: name
           Value: vallonde_bucket_assets
@@ -111,7 +112,7 @@ Resources:
             Properties:
               Path: /character
               Method: POST
-      CodeUri: ./target/scala-2.12/vallonde-assembly-999-SNAPSHOT.jar #TODO needs to be the s3 uri
+      CodeUri: ./target/scala-2.12/vallonde-assembly-999-SNAPSHOT.jar
       Runtime: java8
       AutoPublishAlias: DEV
       Tags:
@@ -128,10 +129,10 @@ Resources:
           UpdateCharacter:
               Type: DynamoDB
               Properties:
-                Stream: TODO # TODO
+                Stream: !Ref CharactersTable
                 StartingPosition: LATEST
                 BatchSize: 10
-        CodeUri: ./target/scala-2.12/vallonde-assembly-999-SNAPSHOT.jar #TODO needs to be the s3 uri
+        CodeUri: ./target/scala-2.12/vallonde-assembly-999-SNAPSHOT.jar
         Runtime: java8
         AutoPublishAlias: DEV
         Tags:
