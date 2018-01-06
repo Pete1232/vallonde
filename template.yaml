@@ -6,6 +6,19 @@ Resources:
     Properties:
       AssumeRolePolicyDocument:
         {
+            "Version" : "2012-10-17",
+            "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": [ "lambda.amazonaws.com" ]
+                  },
+                  "Action": [ "sts:AssumeRole" ]
+                }
+            ]
+        }
+      Policies:
+        {
             "Version": "2012-10-17",
             "Statement": [
                 {
@@ -13,7 +26,7 @@ Resources:
                         "dynamodb:*"
                     ],
                     "Effect": "Allow",
-                    "Resource": "*"
+                    "Resource": !Ref CharactersTable
                 }
             ]
         }
@@ -21,6 +34,19 @@ Resources:
     Type: "AWS::IAM::Role"
     Properties:
       AssumeRolePolicyDocument:
+        {
+            "Version" : "2012-10-17",
+            "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Principal": {
+                    "Service": [ "lambda.amazonaws.com" ]
+                  },
+                  "Action": [ "sts:AssumeRole" ]
+                }
+            ]
+        }
+      Policies:
         {
             "Version": "2012-10-17",
             "Statement": [
@@ -87,7 +113,7 @@ Resources:
     Type: 'AWS::S3::Bucket'
     Properties:
       AccessControl: Private
-      BucketName: vallonde_assets
+      BucketName: vallonde-assets
       CorsConfiguration:
         CorsRules:
           - AllowedMethods: [GET]
