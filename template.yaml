@@ -5,71 +5,59 @@ Resources:
     Type: "AWS::IAM::Role"
     Properties:
       AssumeRolePolicyDocument:
-        {
-            "Version" : "2012-10-17",
-            "Statement": [
-                {
-                  "Effect": "Allow",
-                  "Principal": {
-                    "Service": [ "lambda.amazonaws.com" ]
-                  },
-                  "Action": [ "sts:AssumeRole" ]
-                }
-            ]
-        }
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
       Policies:
-        {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Action": [
-                        "dynamodb:*"
-                    ],
-                    "Effect": "Allow",
-                    "Resource": !Ref CharactersTable
-                }
-            ]
-        }
+        - PolicyName: lambda-dynamo
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              Action:
+                - "dynamodb:*"
+              Effect: Allow
+              Resource: !Ref CharactersTable
   UpdateS3Role:
     Type: "AWS::IAM::Role"
     Properties:
       AssumeRolePolicyDocument:
-        {
-            "Version" : "2012-10-17",
-            "Statement": [
-                {
-                  "Effect": "Allow",
-                  "Principal": {
-                    "Service": [ "lambda.amazonaws.com" ]
-                  },
-                  "Action": [ "sts:AssumeRole" ]
-                }
-            ]
-        }
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
       Policies:
-        {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Effect": "Allow",
-                    "Action": [
-                        "dynamodb:DescribeStream",
-                        "dynamodb:GetRecords",
-                        "dynamodb:GetShardIterator",
-                        "dynamodb:ListStreams",
-                        "logs:CreateLogGroup",
-                        "logs:CreateLogStream",
-                        "logs:PutLogEvents"
-                    ],
-                    "Resource": "*"
-                },
-                {
-                    "Effect": "Allow",
-                    "Action": "s3:*",
-                    "Resource": "*"
-                }
-            ]
-        }
+        - PolicyName: lambda-dynamo-streams
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              Action:
+                - "dynamodb:*"
+                - "dynamodb:DescribeStream"
+                - "dynamodb:GetRecords"
+                - "dynamodb:GetShardIterator"
+                - "dynamodb:ListStreams"
+                - "logs:CreateLogGroup"
+                - "logs:CreateLogStream"
+                - "logs:PutLogEvents"
+              Effect: Allow
+              Resource: !Ref CharactersTable
+        - PolicyName: lambda-s3
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              Action:
+                - "s3:*"
+              Effect: Allow
+              Resource: !Ref CharactersTable
   CharactersTable:
     Type: 'AWS::DynamoDB::Table'
     Properties:
