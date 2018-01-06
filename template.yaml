@@ -21,7 +21,7 @@ Resources:
               Action:
                 - "dynamodb:*"
               Effect: Allow
-              Resource: !Ref CharactersTable
+              Resource: !GetAtt CharactersTable.Arn
   UpdateS3Role:
     Type: "AWS::IAM::Role"
     Properties:
@@ -40,16 +40,12 @@ Resources:
             Version: '2012-10-17'
             Statement:
               Action:
-                - "dynamodb:*"
                 - "dynamodb:DescribeStream"
                 - "dynamodb:GetRecords"
                 - "dynamodb:GetShardIterator"
                 - "dynamodb:ListStreams"
-                - "logs:CreateLogGroup"
-                - "logs:CreateLogStream"
-                - "logs:PutLogEvents"
               Effect: Allow
-              Resource: !Ref CharactersTable
+              Resource: !GetAtt CharactersTable.StreamArn
         - PolicyName: lambda-s3
           PolicyDocument:
             Version: '2012-10-17'
@@ -57,7 +53,7 @@ Resources:
               Action:
                 - "s3:*"
               Effect: Allow
-              Resource: !Ref CharactersTable
+              Resource: !GetAtt CharacterPageBucket.Arn
   CharactersTable:
     Type: 'AWS::DynamoDB::Table'
     Properties:
@@ -117,7 +113,7 @@ Resources:
       FunctionName: UpdateCharacter
       Description: Updates the current model of the character stored in DynamoDB
       Handler: components.updatecharacter.UpdateCharacterHandler
-      Role: !Ref UpdateDatabaseRole
+      Role: !GetAtt UpdateDatabaseRole.Arn
       Events:
         UpdateCharacter:
             Type: Api
@@ -136,12 +132,12 @@ Resources:
         FunctionName: UpdateCharacterModel
         Description: Replaces the model for the character name stored in Amazon S3 with one provided by the client
         Handler: components.updatecharacter.UpdateCharacterHandler  # TODO correct handler
-        Role: !Ref UpdateS3Role
+        Role: !GetAtt UpdateS3Role.Arn
         Events:
           UpdateCharacter:
               Type: DynamoDB
               Properties:
-                Stream: !Ref CharactersTable
+                Stream: !GetAtt CharactersTable.StreamArn
                 StartingPosition: LATEST
                 BatchSize: 10
         CodeUri: ./target/scala-2.12/vallonde-assembly-999-SNAPSHOT.jar
