@@ -1,16 +1,20 @@
 version: 0.2
 
 phases:
+  install:
+    commands:
+      - curl https://bootstrap.pypa.io/get-pip.py > get-pip.py
+      - python get-pip.py
+      - pip install awscli --upgrade
   build:
     commands:
       - sbt clean test
   post_build:
     commands:
       - sbt assembly
-      - aws cloudformation package --template-file template.yaml --s3-bucket vallonde-builds
-                                         --output-template-file packaged-template.yaml
+      - aws cloudformation package --template-file template.yaml --s3-bucket vallonde-builds --output-template-file packaged-template.yaml
 
 artifacts:
+  type: zip
   files:
-    - target/scala-2.12/vallonde-assembly-999-SNAPSHOT.jar
     - packaged-template.yaml
