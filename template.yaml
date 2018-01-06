@@ -69,7 +69,7 @@ Resources:
     Type: 'AWS::S3::Bucket'
     Properties:
       AccessControl: PublicRead
-      BucketName: vallonde_characters
+      BucketName: vallonde
       LifecycleConfiguration:
         Rules:
           - NoncurrentVersionExpirationInDays: 15
@@ -80,14 +80,14 @@ Resources:
         IndexDocument: index.html
       Tags:
         - Key: name
-          Value: character_bucket
+          Value: vallonde_bucket
         - Key: application
           Value: vallonde
   CharacterPageAssetsBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
       AccessControl: Private
-      BucketName: vallonde_characters_assets
+      BucketName: vallonde_assets
       CorsConfiguration:
         AllowedMethods:
           - GET
@@ -95,7 +95,7 @@ Resources:
           - 'http://*'  #TODO add correct origin when known
       Tags:
         - Key: name
-          Value: character_bucket_assets
+          Value: vallonde_bucket_assets
         - Key: application
           Value: vallonde
   UpdateCharacterFunction:
