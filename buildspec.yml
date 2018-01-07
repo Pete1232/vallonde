@@ -1,9 +1,17 @@
 version: 0.2
 
+env:
+  variables:
+    AWS_PROXY_HOST: localhost
+
 phases:
+  install:
+    commands:
+      - pip install localstack
+      - localstack start
   build:
     commands:
-      - sbt clean test
+      - sbt clean test it:test
   post_build:
     commands:
       - sbt assembly
