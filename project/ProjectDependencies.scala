@@ -23,6 +23,8 @@ object ProjectDependencies {
   )).map(_ % Test)
 
   private val it = (test_common ++ Seq(
+    "io.circe" %% "circe-yaml" % "0.7.0",
+    "io.circe" %% "circe-generic" % "0.9.0"
   )).map(_ % IntegrationTest)
 
   def apply(): Seq[ModuleID] = compile ++ test ++ it

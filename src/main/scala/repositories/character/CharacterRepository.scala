@@ -15,25 +15,6 @@ class CharacterRepository extends CharacterUpdater {
   import DefaultDynamoClient._
   import akka.stream.alpakka.dynamodb.scaladsl.DynamoImplicits._
 
-  def createCharacterTable(): Future[CreateTableResult] = {
-
-    val nameType: AttributeDefinition = new AttributeDefinition()
-      .withAttributeName(NAME)
-      .withAttributeType(ScalarAttributeType.S)
-
-    client.single(
-      new CreateTableRequest()
-        .withTableName(CHARACTER_TABLE_NAME)
-        .withAttributeDefinitions(nameType)
-        .withKeySchema(
-          new KeySchemaElement()
-            .withAttributeName(NAME)
-            .withKeyType(KeyType.HASH)
-        )
-        .withProvisionedThroughput(new ProvisionedThroughput(1L, 1L))
-    )
-  }
-
   def getRecordByName(name: String)(implicit ec: ExecutionContext): Future[Option[CharacterModel]] = {
     client.single(
       new GetItemRequest()
