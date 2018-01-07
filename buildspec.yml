@@ -3,14 +3,28 @@ version: 0.2
 env:
   variables:
     AWS_PROXY_HOST: localhost
+    SERVICES: dynamodb,s3
 
 phases:
   install:
     commands:
+      - apt-get update
+      - apt-get install build-essential -y
+      - make -v
+      - apt-get install python-dev -y
+      - python --version
       - curl https://bootstrap.pypa.io/get-pip.py > get-pip.py
       - python get-pip.py
+      - pip --version
+      - curl -sL https://deb.nodesource.com/setup_8.x | bash -
+      - apt-get install nodejs -y
+      - npm --version
+      - java -version
+      - javac -version
+      - apt-get install maven -y
+      - mvn -version
       - pip install localstack
-      - localstack start
+      - nohup localstack start &
   build:
     commands:
       - sbt clean test it:test
