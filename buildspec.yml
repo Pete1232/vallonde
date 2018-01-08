@@ -3,7 +3,7 @@ version: 0.2
 env:
   variables:
     AWS_PROXY_HOST: localhost
-    SERVICES: dynamodb,s3
+    SERVICES: dynamodb,kinesis,s3
 
 phases:
   install:
