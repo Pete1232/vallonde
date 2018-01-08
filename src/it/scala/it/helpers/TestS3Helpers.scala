@@ -6,14 +6,16 @@ import java.security.{DigestInputStream, MessageDigest}
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import com.amazonaws.services.s3.model.{CreateBucketRequest, DeleteObjectsRequest}
+import com.amazonaws.services.s3.model.{AmazonS3Exception, DeleteObjectsRequest}
 import connectors.filestore.amazon.{DefaultAmazonClientFactory, DefaultAmazonConfigProvider}
-import org.scalatest.{BeforeAndAfterEach, Suite}
+import it.helpers.utilities.S3CharacterConfig
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
+import scala.util.Try
 
-trait TestS3Helpers extends BeforeAndAfterEach {
+trait TestS3Helpers extends BeforeAndAfterEach with BeforeAndAfterAll {
   self: Suite =>
 
   lazy val defaultAmazonClientFactory = new DefaultAmazonClientFactory(defaultAmazonConfig)
@@ -22,25 +24,34 @@ trait TestS3Helpers extends BeforeAndAfterEach {
   implicit val system: ActorSystem = ActorSystem("TestSystem")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 
-  override def beforeEach(): Unit = {
-    super.beforeEach()
+  val bucketConfig: S3CharacterConfig = S3CharacterConfig.fromCloudFormationTemplate
 
-    val createRequest = new CreateBucketRequest("testbucket")
-    defaultAmazonClientFactory.client.createBucket(createRequest)
+  override def beforeAll(): Unit = {
+    super.beforeAll()
+    createCharacterBucket()
   }
 
-  override def afterEach(): Unit = {
-    val keys: mutable.Buffer[String] = defaultAmazonClientFactory.client.listObjectsV2("testbucket")
-      .getObjectSummaries
-      .asScala
-      .map(_.getKey)
+  private def createCharacterBucket(): Unit = {
+    import defaultAmazonClientFactory.client._
 
-    defaultAmazonClientFactory.client.deleteObjects(
-      new DeleteObjectsRequest("testbucket")
-        .withKeys(keys: _*)
-    )
-    defaultAmazonClientFactory.client.deleteBucket("testbucket")
-    super.afterEach()
+    Try(createBucket(bucketConfig.asCreateBucketRequest))
+      .recover {
+        case e: AmazonS3Exception if e.getErrorCode == "BucketAlreadyExists" =>
+          clearCharacterBucket()
+          deleteBucket(bucketConfig.BucketName)
+          createBucket(bucketConfig.asCreateBucketRequest)
+      }.map { _ =>
+      setBucketLifecycleConfiguration(bucketConfig.asLifecycleConfigurationRequest)
+    }.get
+  }
+
+  override def beforeEach(): Unit = {
+    super.beforeEach()
+  }
+
+  override def afterAll(): Unit = {
+    super.afterAll()
+    defaultAmazonClientFactory.client.deleteBucket(bucketConfig.BucketName)
   }
 
   def computeHash(path: Path): String = {
@@ -55,5 +66,24 @@ trait TestS3Helpers extends BeforeAndAfterEach {
     }
 
     md5.digest.map("%02x".format(_)).mkString
+  }
+
+  override def afterEach(): Unit = {
+    clearCharacterBucket()
+    super.afterEach()
+  }
+
+  private def clearCharacterBucket(): Unit = {
+    import defaultAmazonClientFactory.client._
+
+    val keys: mutable.Buffer[String] = listObjectsV2(bucketConfig.BucketName)
+      .getObjectSummaries
+      .asScala
+      .map(_.getKey)
+
+    deleteObjects(
+      new DeleteObjectsRequest(bucketConfig.BucketName)
+        .withKeys(keys: _*)
+    )
   }
 }

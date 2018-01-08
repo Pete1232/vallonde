@@ -21,7 +21,7 @@ class FileStoreConnectorIT extends S3TestSuite {
     downloadFile.toPath
   }
 
-  val testLocation: AwsFileLocation = AwsFileLocation("testbucket", "testKey")
+  val testLocation: AwsFileLocation = AwsFileLocation(bucketConfig.BucketName, "testKey")
 
   "Calling the upload method" must {
     "upload the file at the given path to the s3 server and return metadata" in {
