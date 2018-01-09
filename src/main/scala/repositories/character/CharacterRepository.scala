@@ -1,19 +1,21 @@
 package repositories.character
 
 import com.amazonaws.services.dynamodbv2.model._
-import components.character.repositories.CharacterUpdater
-import repositories.character.models.CharacterModel
+import components.updatecharacter.repositories.CharacterUpdater
+import repositories.character.models.{CharacterModel, UpdateCharacterDataResponse}
 
 import scala.collection.convert.ImplicitConversionsToJava._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-class CharacterRepository extends CharacterUpdater {
+class CharacterRepository()
+                         (implicit ec: ExecutionContext) extends CharacterUpdater {
 
   import CharacterModel.AttributeNames._
-  import CharacterRepository._
   import DefaultDynamoClient._
   import akka.stream.alpakka.dynamodb.scaladsl.DynamoImplicits._
+
+  val CHARACTER_TABLE_NAME = "character"
 
   def getRecordByName(name: String)(implicit ec: ExecutionContext): Future[Option[CharacterModel]] = {
     client.single(
@@ -26,16 +28,15 @@ class CharacterRepository extends CharacterUpdater {
     }
   }
 
-  def updateRecordByName(name: String, character: CharacterModel): Future[UpdateItemResult] = {
+  def updateRecordByName(name: String, character: CharacterModel): Future[UpdateCharacterDataResponse] = {
     client.single(
       new UpdateItemRequest()
         .withTableName(CHARACTER_TABLE_NAME)
         .withKey(Map(NAME -> new AttributeValue().withS(name)))
         .withAttributeUpdates(character.asAttributeValueUpdate)
-    )
+    ).map(_ => None)
+      .recover {
+        case t: Throwable => Some(t.getMessage)
+      }.map(UpdateCharacterDataResponse.apply)
   }
-}
-
-object CharacterRepository {
-  val CHARACTER_TABLE_NAME = "character"
 }

@@ -1,4 +1,4 @@
-package components.character.services
+package components.updatecharacter.services
 
 import repositories.character.models.CharacterModel
 

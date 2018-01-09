@@ -7,7 +7,7 @@ import repositories.character.models.{CharacterModel, StatsModel}
 @DoNotDiscover
 class CharacterRepositoryIT extends DatabaseTestSuite {
 
-  lazy val repository = new CharacterRepository
+  lazy val repository: CharacterRepository = new CharacterRepository()
 
   "Calling the update character model method followed by the get method" must {
 

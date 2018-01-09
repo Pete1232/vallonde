@@ -1,4 +1,4 @@
-package components.character.services
+package components.updatecharacter.services
 
 import org.scalacheck.Gen
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
