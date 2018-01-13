@@ -14,3 +14,9 @@ To replicate the build environment start up the container and run the commands i
 (don't forget to export the environment variables).
 
 Once that's done clone down this repo into the container and run all the tests.
+
+#### Running tests against lambda
+The integration test pack includes tests that can be run against Lambda functions.
+However, since creating a Lambda function depends on a build package being created and uploaded these have been placed in a different test scope.
+
+Run the tests for lambda with `sbt lt:test`

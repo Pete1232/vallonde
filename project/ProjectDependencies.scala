@@ -1,3 +1,4 @@
+import ProjectConfigs._
 import sbt._
 
 object ProjectDependencies {
@@ -38,5 +39,10 @@ object ProjectDependencies {
     "com.amazonaws" % "aws-java-sdk-lambda" % "1.11.226"
   )).map(_ % IntegrationTest)
 
-  def apply(): Seq[ModuleID] = compile ++ test ++ it
+  private val lt = (test_common ++ Seq(
+    "io.circe" %% "circe-yaml" % "0.7.0",
+    "com.amazonaws" % "aws-java-sdk-lambda" % "1.11.226"
+  )).map(_ % LambdaTest)
+
+  def apply(): Seq[ModuleID] = compile ++ test ++ it ++ lt
 }

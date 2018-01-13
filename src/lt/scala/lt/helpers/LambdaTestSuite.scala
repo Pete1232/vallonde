@@ -1,4 +1,4 @@
-package it.helpers
+package lt.helpers
 
 import org.scalatest.{AsyncTestSuite, AsyncWordSpec, MustMatchers}
 

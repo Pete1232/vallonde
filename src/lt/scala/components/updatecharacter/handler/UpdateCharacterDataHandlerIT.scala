@@ -5,7 +5,7 @@ import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
-import it.helpers.LambdaTestSuite
+import lt.helpers.LambdaTestSuite
 import org.scalatest.DoNotDiscover
 import repositories.character.models.{CharacterModel, StatsModel}
 

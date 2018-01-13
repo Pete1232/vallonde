@@ -1,6 +1,8 @@
+import ProjectConfigs._
+
 lazy val root = Project(APP_NAME, file("."))
   .enablePlugins(SbtTwirl)
-  .configs(IntegrationTest)
+  .configs(IntegrationTest, LambdaTest)
   .settings(
     name := APP_NAME,
     version := VERSION,
@@ -13,7 +15,18 @@ lazy val root = Project(APP_NAME, file("."))
     libraryDependencies ++= ProjectDependencies()
   )
   .settings(
+    inConfig(LambdaTest)(
+      Defaults.testSettings
+    ): _*
+  )
+  .settings(
+    (test in LambdaTest) := ((test in LambdaTest) dependsOn assembly).value
+  )
+  .settings(
     Defaults.itSettings
+  )
+  .settings(
+    test in assembly := {}
   )
 
 val APP_NAME = "vallonde"
