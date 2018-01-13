@@ -3,7 +3,7 @@ version: 0.2
 env:
   variables:
     AWS_PROXY_HOST: localhost
-    SERVICES: dynamodb,kinesis,s3
+    SERVICES: dynamodb,kinesis,s3,lambda
 
 phases:
   install:
@@ -28,9 +28,7 @@ phases:
   build:
     commands:
       - sbt clean test it:test
-  post_build:
-    commands:
-      - sbt assembly
+      - sbt lt:test
 
 artifacts:
   files:
