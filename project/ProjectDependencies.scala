@@ -2,13 +2,24 @@ import sbt._
 
 object ProjectDependencies {
 
+  val alpakkaVersion = "0.15.1"
+  val circeVersion = "0.9.0"
+
   private val aws_sdk = Seq(
     "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
-    "com.lightbend.akka" %% "akka-stream-alpakka-dynamodb" % "0.15.1",
-    "com.lightbend.akka" %% "akka-stream-alpakka-s3" % "0.15.1"
+    "com.lightbend.akka" %% "akka-stream-alpakka-dynamodb" % alpakkaVersion,
+    "com.lightbend.akka" %% "akka-stream-alpakka-s3" % alpakkaVersion
   )
 
-  private val compile = aws_sdk ++ Seq(
+  private val circe = {
+    Seq(
+      "io.circe" %% "circe-core",
+      "io.circe" %% "circe-generic",
+      "io.circe" %% "circe-parser"
+    ).map(_ % circeVersion)
+  }
+
+  private val compile = aws_sdk ++ circe ++ Seq(
     "org.scala-lang" % "scala-library" % "2.12.4",
     "org.scalactic" %% "scalactic" % "3.0.4"
   )
@@ -24,7 +35,7 @@ object ProjectDependencies {
 
   private val it = (test_common ++ Seq(
     "io.circe" %% "circe-yaml" % "0.7.0",
-    "io.circe" %% "circe-generic" % "0.9.0"
+    "com.amazonaws" % "aws-java-sdk-lambda" % "1.11.226"
   )).map(_ % IntegrationTest)
 
   def apply(): Seq[ModuleID] = compile ++ test ++ it

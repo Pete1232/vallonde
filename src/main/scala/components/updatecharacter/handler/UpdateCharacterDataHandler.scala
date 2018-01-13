@@ -1,17 +1,31 @@
 package components.updatecharacter.handler
 
-import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
+import java.io.{InputStream, OutputStream}
+
+import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
 import components.updatecharacter.repositories.CharacterUpdater
-import repositories.character.models.{CharacterModel, UpdateCharacterDataResponse}
+import io.circe._
+import io.circe.generic.auto._
+import repositories.character.models.CharacterModel
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import scala.io.Source
 
-class UpdateCharacterDataHandler(characterUpdater: CharacterUpdater) extends RequestHandler[CharacterModel, UpdateCharacterDataResponse] {
-  override def handleRequest(input: CharacterModel, context: Context): UpdateCharacterDataResponse = {
+class UpdateCharacterDataHandler(characterUpdater: CharacterUpdater) extends RequestStreamHandler {
 
-    Await.result(
-      characterUpdater.updateRecordByName(input.name, input)
-      , Duration.Inf)
+  override def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
+
+    val inputString: String = Source.fromInputStream(input).mkString
+
+    val result: String = parser.parse(inputString)
+      .flatMap(_.as[CharacterModel])
+      .map { input =>
+        Await.result(
+          characterUpdater.updateRecordByName(input.name, input)
+          , Duration.Inf)
+      }.fold(_.getMessage, _.errors.getOrElse(inputString))
+
+    output.write(result.getBytes())
   }
 }
