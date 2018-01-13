@@ -10,16 +10,16 @@ import org.scalatest.DoNotDiscover
 import repositories.character.models.{CharacterModel, StatsModel}
 
 @DoNotDiscover
-class ScalaUpdateCharacterDataHandlerIT extends LambdaTestSuite {
+class UpdateCharacterDataHandlerIT extends LambdaTestSuite {
 
-  "Calling the UpdateCharacter function" must {
+  "Calling the MOCKED version of the UpdateCharacter function" must {
     "run without throwing an error when valid data is sent" in {
 
       val inputJson: Json = CharacterModel("Test", 1, StatsModel(1, 1, 1, 1, 1, 1)).asJson
 
       val result: InvokeResult = lambda.invoke(
         new InvokeRequest()
-          .withFunctionName("UpdateCharacter")
+          .withFunctionName(Functions.MOCK_UPDATE_CHARACTER)
           .withPayload(inputJson.toString())
       )
 
@@ -31,7 +31,7 @@ class ScalaUpdateCharacterDataHandlerIT extends LambdaTestSuite {
 
       val result: InvokeResult = lambda.invoke(
         new InvokeRequest()
-          .withFunctionName("UpdateCharacter")
+          .withFunctionName(Functions.MOCK_UPDATE_CHARACTER)
           .withPayload(inputModel.asJson.toString())
       )
 
