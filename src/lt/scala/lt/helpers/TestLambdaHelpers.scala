@@ -6,7 +6,7 @@ import java.nio.file.Files
 
 import com.amazonaws.services.lambda.model.{CreateFunctionRequest, DeleteFunctionRequest, FunctionCode}
 import com.amazonaws.services.lambda.{AWSLambda, AWSLambdaClient}
-import connectors.filestore.amazon.{DefaultAmazonClientFactory, DefaultAmazonConfigProvider}
+import config.amazon.TypesafeAmazonConfigProvider
 import org.scalatest.{BeforeAndAfterAll, Suite}
 
 import scala.collection.JavaConverters._
@@ -14,17 +14,20 @@ import scala.collection.JavaConverters._
 trait TestLambdaHelpers extends BeforeAndAfterAll {
   self: Suite =>
 
+  lazy val lambda: AWSLambda = AWSLambdaClient.builder()
+    .withClientConfiguration(defaultAmazonClientFactory.clientSettings)
+    .build()
+
   private lazy val deploymentPackage: ByteBuffer = {
     val fileName = "target/scala-2.12/test.zip"
     zip(fileName, Seq("target/scala-2.12/vallonde-assembly-999-SNAPSHOT.jar"))
     ByteBuffer.wrap(Files.readAllBytes(new File(fileName).toPath))
   }
+  private lazy val defaultAmazonClientFactory = DefaultLambdaConfigProvider
 
-  lazy val lambda: AWSLambda = AWSLambdaClient.builder()
-    .withClientConfiguration(defaultAmazonClientFactory.clientSettings.withProxyPort(4574)) //TODO config
-    .build()
-  private lazy val defaultAmazonClientFactory = new DefaultAmazonClientFactory(defaultAmazonConfig)
-  private val defaultAmazonConfig = new DefaultAmazonConfigProvider // TODO move this class or don't use?
+  object DefaultLambdaConfigProvider extends TypesafeAmazonConfigProvider {
+    override val configRoot: String = "aws.lambda"
+  }
 
   override def beforeAll(): Unit = {
     super.beforeAll()
@@ -79,4 +82,5 @@ trait TestLambdaHelpers extends BeforeAndAfterAll {
     val UPDATE_CHARACTER = "UpdateCharacter"
     val MOCK_UPDATE_CHARACTER = "MockUpdateCharacter"
   }
+
 }

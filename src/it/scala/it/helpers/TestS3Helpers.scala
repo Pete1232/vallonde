@@ -7,7 +7,7 @@ import java.security.{DigestInputStream, MessageDigest}
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import com.amazonaws.services.s3.model.{AmazonS3Exception, DeleteObjectsRequest}
-import connectors.filestore.amazon.{DefaultAmazonClientFactory, DefaultAmazonConfigProvider}
+import connectors.filestore.amazon.S3ClientFactory
 import it.helpers.utilities.S3CharacterConfig
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 
@@ -18,8 +18,7 @@ import scala.util.Try
 trait TestS3Helpers extends BeforeAndAfterEach with BeforeAndAfterAll {
   self: Suite =>
 
-  lazy val defaultAmazonClientFactory = new DefaultAmazonClientFactory(defaultAmazonConfig)
-  private lazy val defaultAmazonConfig = new DefaultAmazonConfigProvider
+  lazy val defaultAmazonClientFactory: S3ClientFactory.type = S3ClientFactory
 
   implicit val system: ActorSystem = ActorSystem("TestSystem")
   implicit val materializer: ActorMaterializer = ActorMaterializer()
@@ -32,7 +31,7 @@ trait TestS3Helpers extends BeforeAndAfterEach with BeforeAndAfterAll {
   }
 
   private def createCharacterBucket(): Unit = {
-    import defaultAmazonClientFactory.client._
+    import defaultAmazonClientFactory.s3Client._
 
     Try(createBucket(bucketConfig.asCreateBucketRequest))
       .recover {
@@ -51,7 +50,7 @@ trait TestS3Helpers extends BeforeAndAfterEach with BeforeAndAfterAll {
 
   override def afterAll(): Unit = {
     super.afterAll()
-    defaultAmazonClientFactory.client.deleteBucket(bucketConfig.BucketName)
+    defaultAmazonClientFactory.s3Client.deleteBucket(bucketConfig.BucketName)
   }
 
   def computeHash(path: Path): String = {
@@ -74,7 +73,7 @@ trait TestS3Helpers extends BeforeAndAfterEach with BeforeAndAfterAll {
   }
 
   private def clearCharacterBucket(): Unit = {
-    import defaultAmazonClientFactory.client._
+    import defaultAmazonClientFactory.s3Client._
 
     val keys: mutable.Buffer[String] = listObjectsV2(bucketConfig.BucketName)
       .getObjectSummaries

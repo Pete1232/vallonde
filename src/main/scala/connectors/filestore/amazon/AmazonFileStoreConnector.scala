@@ -8,7 +8,7 @@ import connectors.filestore._
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 
-class AmazonFileStoreConnector(amazonClientFactory: AmazonClientFactory)
+class AmazonFileStoreConnector(amazonClientFactory: S3ClientFactory)
                               (implicit ec: ExecutionContext)
   extends FileUploader[AwsFileLocation] {
 
@@ -16,7 +16,7 @@ class AmazonFileStoreConnector(amazonClientFactory: AmazonClientFactory)
 
     val putRequest = new PutObjectRequest(to.bucket, to.key, from.toFile)
 
-    Future(amazonClientFactory.client.putObject(putRequest))
+    Future(amazonClientFactory.s3Client.putObject(putRequest))
       .map { result =>
         FileUploadResult(FileStore.S3, result.getMetadata.getRawMetadata.asScala.toMap)
       }
