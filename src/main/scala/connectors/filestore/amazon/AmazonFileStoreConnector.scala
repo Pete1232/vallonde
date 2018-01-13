@@ -16,7 +16,7 @@ class AmazonFileStoreConnector(amazonClientFactory: S3ClientFactory)
 
     val putRequest = new PutObjectRequest(to.bucket, to.key, from.toFile)
 
-    Future(amazonClientFactory.s3Client.putObject(putRequest))
+    Future(amazonClientFactory.client.putObject(putRequest))
       .map { result =>
         FileUploadResult(FileStore.S3, result.getMetadata.getRawMetadata.asScala.toMap)
       }

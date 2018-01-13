@@ -31,7 +31,7 @@ trait TestS3Helpers extends BeforeAndAfterEach with BeforeAndAfterAll {
   }
 
   private def createCharacterBucket(): Unit = {
-    import defaultAmazonClientFactory.s3Client._
+    import defaultAmazonClientFactory.client._
 
     Try(createBucket(bucketConfig.asCreateBucketRequest))
       .recover {
@@ -50,7 +50,7 @@ trait TestS3Helpers extends BeforeAndAfterEach with BeforeAndAfterAll {
 
   override def afterAll(): Unit = {
     super.afterAll()
-    defaultAmazonClientFactory.s3Client.deleteBucket(bucketConfig.BucketName)
+    defaultAmazonClientFactory.client.deleteBucket(bucketConfig.BucketName)
   }
 
   def computeHash(path: Path): String = {
@@ -73,7 +73,7 @@ trait TestS3Helpers extends BeforeAndAfterEach with BeforeAndAfterAll {
   }
 
   private def clearCharacterBucket(): Unit = {
-    import defaultAmazonClientFactory.s3Client._
+    import defaultAmazonClientFactory.client._
 
     val keys: mutable.Buffer[String] = listObjectsV2(bucketConfig.BucketName)
       .getObjectSummaries

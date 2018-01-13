@@ -4,9 +4,10 @@ import java.io.File
 import java.nio.ByteBuffer
 import java.nio.file.Files
 
+import com.amazonaws.client.builder.AwsSyncClientBuilder
 import com.amazonaws.services.lambda.model.{CreateFunctionRequest, DeleteFunctionRequest, FunctionCode}
-import com.amazonaws.services.lambda.{AWSLambda, AWSLambdaClient}
-import config.amazon.TypesafeAmazonConfigProvider
+import com.amazonaws.services.lambda.{AWSLambda, AWSLambdaClient, AWSLambdaClientBuilder}
+import config.amazon.{DefaultAmazonClientFactory, TypesafeAmazonConfigProvider}
 import org.scalatest.{BeforeAndAfterAll, Suite}
 
 import scala.collection.JavaConverters._
@@ -14,19 +15,22 @@ import scala.collection.JavaConverters._
 trait TestLambdaHelpers extends BeforeAndAfterAll {
   self: Suite =>
 
-  lazy val lambda: AWSLambda = AWSLambdaClient.builder()
-    .withClientConfiguration(defaultAmazonClientFactory.clientSettings)
-    .build()
+  lazy val lambda: AWSLambda = LambdaClientFactory.client
 
   private lazy val deploymentPackage: ByteBuffer = {
     val fileName = "target/scala-2.12/test.zip"
     zip(fileName, Seq("target/scala-2.12/vallonde-assembly-999-SNAPSHOT.jar"))
     ByteBuffer.wrap(Files.readAllBytes(new File(fileName).toPath))
   }
-  private lazy val defaultAmazonClientFactory = DefaultLambdaConfigProvider
 
   object DefaultLambdaConfigProvider extends TypesafeAmazonConfigProvider {
     override val configRoot: String = "aws.lambda"
+  }
+
+  object LambdaClientFactory extends DefaultAmazonClientFactory[AWSLambdaClientBuilder, AWSLambda](DefaultLambdaConfigProvider) {
+    override val defaultClient: AwsSyncClientBuilder[AWSLambdaClientBuilder, AWSLambda] = {
+      AWSLambdaClient.builder()
+    }
   }
 
   override def beforeAll(): Unit = {
