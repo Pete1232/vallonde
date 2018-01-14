@@ -18,18 +18,18 @@ Resources:
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
-              Action:
-                - "dynamodb:*"
-              Effect: Allow
-              Resource: "*"
+              - Action:
+                  - "dynamodb:*"
+                Effect: Allow
+                Resource: "*"
         - PolicyName: lambda-cloudwatch
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
-              Action:
-                - "logs:*"
-              Effect: Allow
-              Resurce: "arn:aws:logs:::*"
+              - Action:
+                  - "logs:*"
+                Effect: Allow
+                Resurce: "arn:aws:logs:::*"
   UpdateS3Role:
     Type: "AWS::IAM::Role"
     Properties:
@@ -47,29 +47,29 @@ Resources:
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
-              Action:
-                - "dynamodb:DescribeStream"
-                - "dynamodb:GetRecords"
-                - "dynamodb:GetShardIterator"
-                - "dynamodb:ListStreams"
-              Effect: Allow
-              Resource: !GetAtt CharactersTable.StreamArn
+              - Action:
+                  - "dynamodb:DescribeStream"
+                  - "dynamodb:GetRecords"
+                  - "dynamodb:GetShardIterator"
+                  - "dynamodb:ListStreams"
+                Effect: Allow
+                Resource: !GetAtt CharactersTable.StreamArn
         - PolicyName: lambda-s3
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
-              Action:
-                - "s3:*"
-              Effect: Allow
-              Resource: !GetAtt CharacterPageBucket.Arn
+              - Action:
+                  - "s3:*"
+                Effect: Allow
+                Resource: !GetAtt CharacterPageBucket.Arn
         - PolicyName: lambda-cloudwatch
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
-              Action:
-                - "logs:*"
-              Effect: Allow
-              Resurce: "arn:aws:logs:::*"
+              - Action:
+                  - "logs:*"
+                Effect: Allow
+                Resurce: "arn:aws:logs:::*"
   CharactersTable:
     Type: 'AWS::DynamoDB::Table'
     Properties:
