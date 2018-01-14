@@ -21,7 +21,7 @@ Resources:
               Action:
                 - "dynamodb:*"
               Effect: Allow
-              Resource: !GetAtt CharactersTable.Arn
+              Resource: "*"
   UpdateS3Role:
     Type: "AWS::IAM::Role"
     Properties:
