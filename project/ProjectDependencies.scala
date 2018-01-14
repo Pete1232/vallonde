@@ -20,7 +20,13 @@ object ProjectDependencies {
     ).map(_ % circeVersion)
   }
 
-  private val compile = aws_sdk ++ circe ++ Seq(
+  private val logging = Seq(
+    "com.amazonaws" % "aws-lambda-java-log4j2" % "1.0.0",
+    "org.apache.logging.log4j" % "log4j-core" % "2.8.2",
+    "org.apache.logging.log4j" % "log4j-api" % "2.8.2"
+  )
+
+  private val compile = aws_sdk ++ circe ++ logging ++ Seq(
     "org.scala-lang" % "scala-library" % "2.12.4",
     "org.scalactic" %% "scalactic" % "3.0.4"
   )

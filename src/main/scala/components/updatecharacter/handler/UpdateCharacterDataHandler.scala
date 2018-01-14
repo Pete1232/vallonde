@@ -6,6 +6,7 @@ import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
 import components.updatecharacter.repositories.CharacterUpdater
 import io.circe._
 import io.circe.generic.auto._
+import org.apache.logging.log4j.{LogManager, Logger}
 import repositories.character.models.CharacterModel
 
 import scala.concurrent.duration.Duration
@@ -14,9 +15,13 @@ import scala.io.Source
 
 class UpdateCharacterDataHandler(characterUpdater: CharacterUpdater) extends RequestStreamHandler {
 
+  val logger: Logger = LogManager.getLogger(this.getClass)
+
   override def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
 
     val inputString: String = Source.fromInputStream(input).mkString
+
+    logger.debug(s"Received update request $inputString")
 
     val asyncResult: Future[Option[String]] = parser.parse(inputString)
       .flatMap(_.as[CharacterModel])
