@@ -21,7 +21,9 @@ class UpdateCharacterDataHandler(characterUpdater: CharacterUpdater) extends Req
 
     val inputString: String = Source.fromInputStream(input).mkString
 
+    // Testing cloudwatch
     logger.debug(s"Received update request $inputString")
+    System.out.println(s"Received update request $inputString")
 
     val asyncResult: Future[Option[String]] = parser.parse(inputString)
       .flatMap(_.as[CharacterModel])
