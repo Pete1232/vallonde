@@ -107,12 +107,12 @@ Resources:
           Value: vallonde_bucket_assets
         - Key: application
           Value: vallonde
-  UpdateCharacterFunction:
+  UpdateCharacterDataFunction:
     Type: 'AWS::Serverless::Function'
     Properties:
-      FunctionName: UpdateCharacter
+      FunctionName: UpdateCharacterData
       Description: Updates the current model of the character stored in DynamoDB
-      Handler: components.updatecharacter.UpdateCharacterHandler
+      Handler: components.updatecharacter.handler.DefaultUpdateCharacterDataHandler
       Role: !GetAtt UpdateDatabaseRole.Arn
       Events:
         UpdateCharacter:

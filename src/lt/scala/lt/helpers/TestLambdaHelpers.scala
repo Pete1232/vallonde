@@ -1,13 +1,10 @@
 package lt.helpers
 
-import java.io.File
-import java.nio.ByteBuffer
-import java.nio.file.Files
-
 import com.amazonaws.client.builder.AwsSyncClientBuilder
-import com.amazonaws.services.lambda.model.{CreateFunctionRequest, DeleteFunctionRequest, FunctionCode}
+import com.amazonaws.services.lambda.model.{CreateFunctionRequest, DeleteFunctionRequest}
 import com.amazonaws.services.lambda.{AWSLambda, AWSLambdaClient, AWSLambdaClientBuilder}
 import config.amazon.{DefaultAmazonClientFactory, TypesafeAmazonConfigProvider}
+import lt.helpers.utilities.LambdaUpdateCharacterDataConfig
 import org.scalatest.{BeforeAndAfterAll, Suite}
 
 import scala.collection.JavaConverters._
@@ -16,12 +13,6 @@ trait TestLambdaHelpers extends BeforeAndAfterAll {
   self: Suite =>
 
   lazy val lambda: AWSLambda = LambdaClientFactory.client
-
-  private lazy val deploymentPackage: ByteBuffer = {
-    val fileName = "target/scala-2.12/test.zip"
-    zip(fileName, Seq("target/scala-2.12/vallonde-assembly-999-SNAPSHOT.jar"))
-    ByteBuffer.wrap(Files.readAllBytes(new File(fileName).toPath))
-  }
 
   object DefaultLambdaConfigProvider extends TypesafeAmazonConfigProvider {
     override val configRoot: String = "aws.lambda"
@@ -36,18 +27,17 @@ trait TestLambdaHelpers extends BeforeAndAfterAll {
   override def beforeAll(): Unit = {
     super.beforeAll()
     deleteAllFunctions()
-    createFunction(Functions.UPDATE_CHARACTER, "components.updatecharacter.handler.DefaultUpdateCharacterDataHandler")
-    createFunction(Functions.MOCK_UPDATE_CHARACTER, "components.updatecharacter.handler.MockUpdateCharacterDataHandler")
+    createUpdateCharacterFunction(isMocked = false)
+    createUpdateCharacterFunction(isMocked = true)
   }
 
-  private def createFunction(functionName: String, handler: String) = {
-    lambda.createFunction(
-      new CreateFunctionRequest()
-        .withFunctionName(functionName)
-        .withCode(new FunctionCode().withZipFile(deploymentPackage))
-        .withRuntime(com.amazonaws.services.lambda.model.Runtime.Java8)
-        .withHandler(handler)
-    )
+  private def createUpdateCharacterFunction(isMocked: Boolean) = {
+    val config: LambdaUpdateCharacterDataConfig = LambdaUpdateCharacterDataConfig.fromCloudFormationTemplate
+    val createRequest: CreateFunctionRequest = {
+      config.asCreateFunctionRequest(isMocked)
+    }
+
+    lambda.createFunction(createRequest)
   }
 
   private def deleteAllFunctions() = {
@@ -62,29 +52,9 @@ trait TestLambdaHelpers extends BeforeAndAfterAll {
     super.afterAll()
   }
 
-  private def zip(out: String, files: Iterable[String]): Unit = {
-    import java.io.{BufferedInputStream, FileInputStream, FileOutputStream}
-    import java.util.zip.{ZipEntry, ZipOutputStream}
-
-    val zip = new ZipOutputStream(new FileOutputStream(out))
-
-    files.foreach { name =>
-      zip.putNextEntry(new ZipEntry(name.split('/').last))
-      val in = new BufferedInputStream(new FileInputStream(name))
-      var b: Int = in.read()
-      while (b > -1) {
-        zip.write(b)
-        b = in.read()
-      }
-      in.close()
-      zip.closeEntry()
-    }
-    zip.close()
-  }
-
   object Functions {
-    val UPDATE_CHARACTER = "UpdateCharacter"
-    val MOCK_UPDATE_CHARACTER = "MockUpdateCharacter"
+    val DEFAULT_UPDATE_CHARACTER = "UpdateCharacterData"
+    val MOCK_UPDATE_CHARACTER = "MockUpdateCharacterData"
   }
 
 }
