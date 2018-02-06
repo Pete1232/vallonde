@@ -26,15 +26,8 @@ lazy val root = Project(APP_NAME, file("."))
     Defaults.itSettings
   )
   .settings(
+    AssemblyStrategy(),
     test in assembly := {}
-  )
-  .settings(
-    assemblyMergeStrategy in assembly := {
-      case PathList(ps@_*) if ps.last == "Log4j2Plugins.dat" => MergeStrategy.first
-      case x =>
-        val oldStrategy = (assemblyMergeStrategy in assembly).value
-        oldStrategy(x)
-    }
   )
 
 val APP_NAME = "vallonde"

@@ -22,13 +22,14 @@ class UpdateCharacterDataHandler(characterUpdater: CharacterUpdater) extends Req
     val inputString: String = Source.fromInputStream(input).mkString
 
     logger.debug(s"Received update request $inputString")
-    logger.error(s"Test error log - input $inputString")
 
     val asyncResult: Future[Option[String]] = parser.parse(inputString)
       .flatMap(_.as[CharacterModel])
       .fold(handleInputError, handleInputSuccess)
 
     val unsafeSyncResult: String = Await.result(asyncResult, Duration.Inf).getOrElse(inputString)
+
+    logger.debug(s"Returning $unsafeSyncResult")
 
     output.write(unsafeSyncResult.getBytes())
   }
