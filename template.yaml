@@ -29,7 +29,7 @@ Resources:
               - Action:
                   - "logs:*"
                 Effect: Allow
-                Resource: "arn:aws:logs:::*"
+                Resource: "*"
   UpdateS3Role:
     Type: "AWS::IAM::Role"
     Properties:
@@ -69,7 +69,7 @@ Resources:
               - Action:
                   - "logs:*"
                 Effect: Allow
-                Resource: "arn:aws:logs:::*"
+                Resource: "*"
   CharactersTable:
     Type: 'AWS::DynamoDB::Table'
     Properties:
