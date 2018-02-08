@@ -1,8 +1,7 @@
-package components.updatecharacter.handler
+package components.updatecharacter.handlers
 
-import java.io.{InputStream, OutputStream}
-
-import com.amazonaws.services.lambda.runtime.{Context, RequestStreamHandler}
+import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent}
+import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import components.updatecharacter.repositories.CharacterUpdater
 import io.circe._
 import io.circe.generic.auto._
@@ -11,27 +10,31 @@ import repositories.character.models.CharacterModel
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
-import scala.io.Source
 
-class UpdateCharacterDataHandler(characterUpdater: CharacterUpdater) extends RequestStreamHandler {
+class UpdateCharacterDataHandler(characterUpdater: CharacterUpdater)
+  extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent] {
 
   val logger: Logger = LogManager.getLogger(this.getClass)
 
-  override def handleRequest(input: InputStream, output: OutputStream, context: Context): Unit = {
+  override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
 
-    val inputString: String = Source.fromInputStream(input).mkString
+    logger.debug(s"Received update request $input")
 
-    logger.debug(s"Received update request $inputString")
+    val inputString: String = input.getBody
 
     val asyncResult: Future[Option[String]] = parser.parse(inputString)
-      .flatMap(_.as[CharacterModel])
+      .flatMap { parsedJson =>
+        logger.debug(s"Parsed request as $parsedJson")
+        parsedJson.as[CharacterModel]
+      }
       .fold(handleInputError, handleInputSuccess)
 
     val unsafeSyncResult: String = Await.result(asyncResult, Duration.Inf).getOrElse(inputString)
 
     logger.debug(s"Returning $unsafeSyncResult")
 
-    output.write(unsafeSyncResult.getBytes())
+    new APIGatewayProxyResponseEvent()
+      .withBody(unsafeSyncResult)
   }
 
   private def handleInputError(error: Error): Future[Option[String]] = {

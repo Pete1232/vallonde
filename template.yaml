@@ -128,7 +128,7 @@ Resources:
     Properties:
       FunctionName: UpdateCharacterData
       Description: Updates the current model of the character stored in DynamoDB
-      Handler: components.updatecharacter.handler.DefaultUpdateCharacterDataHandler
+      Handler: components.updatecharacter.handlers.DefaultUpdateCharacterDataHandler
       MemorySize: 1024
       Timeout: 15
       Role: !GetAtt UpdateDatabaseRole.Arn

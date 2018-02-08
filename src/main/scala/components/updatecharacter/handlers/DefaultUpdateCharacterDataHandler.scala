@@ -1,4 +1,4 @@
-package components.updatecharacter.handler
+package components.updatecharacter.handlers
 
 import repositories.character.CharacterRepository
 
