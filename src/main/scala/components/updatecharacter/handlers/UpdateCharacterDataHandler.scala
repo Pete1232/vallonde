@@ -1,7 +1,7 @@
 package components.updatecharacter.handlers
 
+import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent}
-import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import components.updatecharacter.repositories.CharacterUpdater
 import io.circe._
 import io.circe.generic.auto._
@@ -11,12 +11,11 @@ import repositories.character.models.CharacterModel
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
-class UpdateCharacterDataHandlerInternal(characterUpdater: CharacterUpdater)
-  extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent] {
+class UpdateCharacterDataHandler(characterUpdater: CharacterUpdater) {
 
   val logger: Logger = LogManager.getLogger(this.getClass)
 
-  override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
+  def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
 
     logger.debug(s"Received update request $input")
 

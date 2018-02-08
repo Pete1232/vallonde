@@ -2,7 +2,6 @@ package components.updatecharacter.handler
 
 import com.amazonaws.services.lambda.model.{InvokeRequest, InvokeResult, LogType}
 import io.circe.generic.auto._
-import io.circe.parser._
 import io.circe.syntax._
 import lt.helpers.LambdaTestSuite
 import org.apache.logging.log4j.{LogManager, Logger}
@@ -55,10 +54,7 @@ class UpdateCharacterDataHandlerIT extends LambdaTestSuite {
 
       logger.debug(s"Output : $resultAsString : End Output")
 
-      parse(resultAsString).flatMap(_.as[CharacterModel]) match {
-        case Left(error) => fail(error.getMessage)
-        case Right(model) => model mustBe inputModel
-      }
+      resultAsString must include(escapedRequestWithValidBody)
     }
   }
 }

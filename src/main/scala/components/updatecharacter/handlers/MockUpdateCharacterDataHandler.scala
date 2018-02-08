@@ -2,11 +2,11 @@ package components.updatecharacter.handlers
 
 import com.amazonaws.services.lambda.runtime.events.{APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent}
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
-import repositories.character.CharacterRepository
+import components.updatecharacter.repositories.MockCharacterUpdater
 
-class DefaultUpdateCharacterDataHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent] {
+class MockUpdateCharacterDataHandler extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent] {
   override def handleRequest(input: APIGatewayProxyRequestEvent, context: Context): APIGatewayProxyResponseEvent = {
-    new UpdateCharacterDataHandler(new CharacterRepository()(scala.concurrent.ExecutionContext.global))
+    new UpdateCharacterDataHandler(MockCharacterUpdater)
       .handleRequest(input, context)
   }
 }
