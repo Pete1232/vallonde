@@ -11,12 +11,12 @@ import repositories.character.models.{CharacterModel, StatsModel, UpdateCharacte
 
 import scala.concurrent.Future
 
-class UpdateCharacterDataHandlerSpec extends AsyncWordSpec with MustMatchers with AsyncMockFactory {
+class UpdateCharacterDataHandlerInternalSpec extends AsyncWordSpec with MustMatchers with AsyncMockFactory {
 
   val updater: CharacterUpdater = mock[CharacterUpdater]
   val mockContext: Context = mock[Context]
 
-  val handler = new UpdateCharacterDataHandler(updater)
+  val handler = new UpdateCharacterDataHandlerInternal(updater)
 
   "Calling the handle request method" must {
     "return the input value if no error was thrown" in {

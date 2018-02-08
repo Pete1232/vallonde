@@ -1,0 +1,6 @@
+package components.updatecharacter.handlers
+
+import components.updatecharacter.repositories.MockCharacterUpdater
+
+class MockUpdateCharacterDataHandlerImpl
+  extends UpdateCharacterDataHandlerInternal(MockCharacterUpdater)

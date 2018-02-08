@@ -1,6 +1,6 @@
 package components.updatecharacter.handler
 
-import com.amazonaws.services.lambda.model.{InvokeRequest, InvokeResult}
+import com.amazonaws.services.lambda.model.{InvokeRequest, InvokeResult, LogType}
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
@@ -33,7 +33,7 @@ class UpdateCharacterDataHandlerIT extends LambdaTestSuite {
 
       result.getStatusCode mustBe 200
     }
-    "return the input value correctly" ignore {
+    "return the input value correctly" in {
 
       val inputModel: CharacterModel = CharacterModel("Test", 1, StatsModel(1, 1, 1, 1, 1, 1))
       val escapedRequestWithValidBody: String = StringEscapeUtils.escapeEcmaScript(inputModel.asJson.noSpaces)
@@ -46,6 +46,7 @@ class UpdateCharacterDataHandlerIT extends LambdaTestSuite {
         new InvokeRequest()
           .withFunctionName(Functions.MOCK_UPDATE_CHARACTER)
           .withPayload(requestWithValidBody.toString)
+          .withLogType(LogType.None)
       )
 
       logger.debug(result.toString)

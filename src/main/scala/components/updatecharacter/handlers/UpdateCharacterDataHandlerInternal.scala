@@ -11,7 +11,7 @@ import repositories.character.models.CharacterModel
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
-class UpdateCharacterDataHandler(characterUpdater: CharacterUpdater)
+class UpdateCharacterDataHandlerInternal(characterUpdater: CharacterUpdater)
   extends RequestHandler[APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent] {
 
   val logger: Logger = LogManager.getLogger(this.getClass)
