@@ -28,7 +28,7 @@ phases:
   build:
     commands:
       - sbt clean test it:test
-      - sbt lt:test
+      - sbt assembly lt:test
 
 artifacts:
   files:

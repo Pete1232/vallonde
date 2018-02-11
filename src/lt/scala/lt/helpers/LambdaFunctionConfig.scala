@@ -1,4 +1,4 @@
-package lt.helpers.utilities
+package lt.helpers
 
 import java.io.{File, FileInputStream, InputStreamReader}
 import java.nio.ByteBuffer
@@ -8,10 +8,10 @@ import com.amazonaws.services.lambda.model.{CreateFunctionRequest, FunctionCode}
 import io.circe.generic.auto._
 import io.circe.yaml
 
-case class LambdaUpdateCharacterDataConfig(FunctionName: String,
-                                           Handler: String,
-                                           Runtime: String,
-                                           CodeUri: String) {
+case class LambdaFunctionConfig(FunctionName: String,
+                                Handler: String,
+                                Runtime: String,
+                                CodeUri: String) {
   def asCreateFunctionRequest(createMockedVersion: Boolean): CreateFunctionRequest = {
     val functionNameOverride: String = if (createMockedVersion) s"Mock$FunctionName" else FunctionName
     val handlerOverride: String = if (createMockedVersion) Handler.replaceFirst("Default", "Mock") else Handler
@@ -50,13 +50,13 @@ case class LambdaUpdateCharacterDataConfig(FunctionName: String,
   }
 }
 
-object LambdaUpdateCharacterDataConfig {
-  def fromCloudFormationTemplate: LambdaUpdateCharacterDataConfig = {
+object LambdaFunctionConfig {
+  def fromCloudFormationTemplate(functionName: String): LambdaFunctionConfig = {
     val template = new FileInputStream(new File("template.yaml"))
 
     yaml.parser.parse(new InputStreamReader(template))
       .flatMap { template =>
-        template.hcursor.downField("Resources").downField("UpdateCharacterDataFunction").downField("Properties").as[LambdaUpdateCharacterDataConfig]
+        template.hcursor.downField("Resources").downField(functionName).downField("Properties").as[LambdaFunctionConfig]
       }.right.get
   }
 }

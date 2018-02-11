@@ -15,7 +15,7 @@ class UpdateCharacterDataHandlerIT extends LambdaTestSuite {
   val logger: Logger = LogManager.getLogger(this.getClass)
 
   "Calling the MOCKED version of the UpdateCharacter function" must {
-    "run without throwing an error when valid data is sent" in {
+    "return 200 status when valid data is sent" in {
 
       val inputModel: CharacterModel = CharacterModel("Test", 1, StatsModel(1, 1, 1, 1, 1, 1))
       val escapedRequestWithValidBody: String = StringEscapeUtils.escapeEcmaScript(inputModel.asJson.noSpaces)

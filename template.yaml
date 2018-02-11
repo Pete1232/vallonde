@@ -144,23 +144,24 @@ Resources:
       Tags:
         name: character_function_update
         application: vallonde
-  UpdateCharacterModelFunction:
+  GetCharacterDataFunction:
       Type: 'AWS::Serverless::Function'
       Properties:
-        FunctionName: UpdateCharacterModel
-        Description: Replaces the model for the character name stored in Amazon S3 with one provided by the client
-        Handler: components.updatecharacter.UpdateCharacterHandler  # TODO correct handler
-        Role: !GetAtt UpdateS3Role.Arn
+        FunctionName: GetCharacterData
+        Description: Get the current data model for the character from DynamoDB
+        Handler: components.get_character.handlers.DefaultGetCharacterDataHandler
+        MemorySize: 1024
+        Timeout: 15
+        Role: !GetAtt UpdateDatabaseRole.Arn
         Events:
           UpdateCharacter:
-              Type: DynamoDB
+              Type: Api
               Properties:
-                Stream: !GetAtt CharactersTable.StreamArn
-                StartingPosition: LATEST
-                BatchSize: 10
+                Path: /character/{name}
+                Method: GET
         CodeUri: ./target/scala-2.12/vallonde-assembly-999-SNAPSHOT.jar
         Runtime: java8
         AutoPublishAlias: DEV
         Tags:
-          name: character_function_update_model
+          name: character_function_get
           application: vallonde

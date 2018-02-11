@@ -44,12 +44,7 @@ object ProjectDependencies {
   private val it = (test_common ++ Seq(
     "io.circe" %% "circe-yaml" % "0.7.0",
     "com.amazonaws" % "aws-java-sdk-lambda" % "1.11.226"
-  )).map(_ % IntegrationTest)
+  )).map(_ % s"${IntegrationTest.name}, ${LambdaTest.name}, ${LambdaTestClean.name}")
 
-  private val lt = (test_common ++ Seq(
-    "io.circe" %% "circe-yaml" % "0.7.0",
-    "com.amazonaws" % "aws-java-sdk-lambda" % "1.11.226"
-  )).map(_ % LambdaTest)
-
-  def apply(): Seq[ModuleID] = compile ++ test ++ it ++ lt
+  def apply(): Seq[ModuleID] = compile ++ test ++ it
 }

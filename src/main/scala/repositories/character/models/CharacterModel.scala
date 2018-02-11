@@ -11,7 +11,7 @@ case class CharacterModel(name: String,
 
     import scala.collection.convert.ImplicitConversionsToJava._
 
-    def update(value: AttributeValue) = {
+    def update(value: AttributeValue): AttributeValueUpdate = {
       new AttributeValueUpdate()
         .withValue(value)
         .withAction(AttributeAction.PUT)
@@ -31,9 +31,9 @@ object CharacterModel {
 
     import scala.collection.convert.ImplicitConversionsToScala._
 
-    val name = inputMap.toMap.get(NAME).map(_.getS)
-    val level = inputMap.toMap.get(LEVEL).map(_.getN.toInt)
-    val stats = inputMap.toMap.get(STATS).map(_.getM).flatMap(StatsModel.fromJavaMap)
+    val name: Option[String] = inputMap.toMap.get(NAME).map(_.getS)
+    val level: Option[Int] = inputMap.toMap.get(LEVEL).map(_.getN.toInt)
+    val stats: Option[StatsModel] = inputMap.toMap.get(STATS).map(_.getM).flatMap(StatsModel.fromJavaMap)
 
     for {
       n <- name

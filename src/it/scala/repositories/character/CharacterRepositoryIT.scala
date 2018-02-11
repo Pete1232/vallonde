@@ -4,6 +4,8 @@ import it.helpers.DatabaseTestSuite
 import org.scalatest.DoNotDiscover
 import repositories.character.models.{CharacterModel, StatsModel, UpdateCharacterDataResponse}
 
+import scala.concurrent.Future
+
 @DoNotDiscover
 class CharacterRepositoryIT extends DatabaseTestSuite {
 
@@ -15,8 +17,8 @@ class CharacterRepositoryIT extends DatabaseTestSuite {
   "Calling the get character method" must {
     "return None if no character exists or was created" in {
       createCharacterTable()
-        .flatMap(_ => repository.getRecordByName(defaultCharacter.name))
-        .map(_ mustBe None)
+        .flatMap(_ => repository.getRecordByName(defaultCharacter.name).value)
+        .map(_ mustBe Left("No character model found"))
     }
   }
 
@@ -39,18 +41,42 @@ class CharacterRepositoryIT extends DatabaseTestSuite {
 
   "Calling the update character model method followed by the get method" must {
     "create a new character if one doesn't exist already and return it" in {
-      createCharacterTable()
-        .flatMap(_ => repository.updateRecordByName(defaultCharacter.name, defaultCharacter))
-        .flatMap(_ => repository.getRecordByName(defaultCharacter.name))
-        .map(_ mustBe Some(defaultCharacter))
+
+      lazy val insert: Future[UpdateCharacterDataResponse] = {
+        createCharacterTable()
+          .flatMap(_ => repository.updateRecordByName(defaultCharacter.name, defaultCharacter))
+      }
+
+      lazy val get: Future[Either[String, CharacterModel]] = {
+        repository.getRecordByName(defaultCharacter.name).value
+      }
+
+      for {
+        _ <- insert
+        result <- get
+      } yield result mustBe Right(defaultCharacter)
     }
     "update an existing character with a new level and return the updated model" in {
       val updatedCharacter: CharacterModel = defaultCharacter.copy(level = 2)
 
-      createCharacterTable()
-        .flatMap(_ => repository.updateRecordByName(defaultCharacter.name, updatedCharacter))
-        .flatMap(_ => repository.getRecordByName(defaultCharacter.name))
-        .map(_ mustBe Some(updatedCharacter))
+      lazy val insert: Future[UpdateCharacterDataResponse] = {
+        createCharacterTable()
+          .flatMap(_ => repository.updateRecordByName(defaultCharacter.name, defaultCharacter))
+      }
+
+      lazy val update: Future[UpdateCharacterDataResponse] = {
+        repository.updateRecordByName(defaultCharacter.name, updatedCharacter)
+      }
+
+      lazy val get: Future[Either[String, CharacterModel]] = {
+        repository.getRecordByName(defaultCharacter.name).value
+      }
+
+      for {
+        _ <- insert
+        _ <- update
+        result <- get
+      } yield result mustBe Right(updatedCharacter)
     }
   }
 }
