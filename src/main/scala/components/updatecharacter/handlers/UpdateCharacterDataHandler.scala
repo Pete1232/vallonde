@@ -8,6 +8,7 @@ import io.circe.generic.auto._
 import org.apache.logging.log4j.{LogManager, Logger}
 import repositories.character.models.CharacterModel
 
+import scala.collection.JavaConverters._
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
@@ -21,30 +22,32 @@ class UpdateCharacterDataHandler(characterUpdater: CharacterUpdater) {
 
     val inputString: String = input.getBody
 
-    val asyncResult: Future[Option[String]] = parser.parse(inputString)
+    val asyncResult: Future[Option[(String, Int)]] = parser.parse(inputString)
       .flatMap { parsedJson =>
         logger.debug(s"Parsed request as $parsedJson")
         parsedJson.as[CharacterModel]
       }
       .fold(handleInputError, handleInputSuccess)
 
-    val unsafeSyncResult: String = Await.result(asyncResult, Duration.Inf).getOrElse(inputString)
+    val unsafeSyncResult: (String, Int) = Await.result(asyncResult, Duration.Inf).getOrElse(inputString -> 200)
 
     logger.debug(s"Returning $unsafeSyncResult")
 
     new APIGatewayProxyResponseEvent()
-      .withBody(unsafeSyncResult)
+      .withStatusCode(unsafeSyncResult._2)
+      .withBody(unsafeSyncResult._1)
+      .withHeaders(Map("Access-Control-Allow-Origin" -> "*").asJava)
   }
 
-  private def handleInputError(error: Error): Future[Option[String]] = {
+  private def handleInputError(error: Error): Future[Option[(String, Int)]] = {
     Future.successful(Some(error match {
-      case p: ParsingFailure => s"ParsingFailure: ${p.message}"
-      case d: DecodingFailure => s"DecodingFailure: ${d.message}"
-      case e => s"${e.getClass.getSimpleName}: ${e.getMessage}"
+      case p: ParsingFailure => s"ParsingFailure: ${p.message}" -> 400
+      case d: DecodingFailure => s"DecodingFailure: ${d.message}" -> 400
+      case e => s"${e.getClass.getSimpleName}: ${e.getMessage}" -> 503
     }))
   }
 
-  private def handleInputSuccess(input: CharacterModel): Future[Option[String]] = {
+  private def handleInputSuccess(input: CharacterModel): Future[Option[(String, Int)]] = {
     import scala.concurrent.ExecutionContext.Implicits.global
 
     characterUpdater.updateRecordByName(input.name, input)
@@ -52,5 +55,6 @@ class UpdateCharacterDataHandler(characterUpdater: CharacterUpdater) {
       .recover {
         case e: Throwable => Some(e.getMessage)
       }
+      .map(_.map(_ -> 503))
   }
 }

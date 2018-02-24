@@ -180,7 +180,13 @@ class GetCharacterDataHandlerSpec extends AsyncWordSpec with MustMatchers with A
       val request: APIGatewayProxyRequestEvent = new APIGatewayProxyRequestEvent()
         .withPath(s"character/$name")
 
+      val responseModel: CharacterModel = CharacterModel(name, 1, StatsModel(1, 1, 1, 1, 1, 1))
+      val responseAsFuture: Future[Either[String, CharacterModel]] = Future.successful(Either.right(responseModel))
+      val dbResponse: EitherT[Future, String, CharacterModel] = EitherT.apply(responseAsFuture)
+
       logger.debug("Calling handle request function")
+      getter.getRecordByName _ expects name returning dbResponse anyNumberOfTimes()
+
       val actualResponse: APIGatewayProxyResponseEvent = handler.handleRequest(request, mockContext)
 
       actualResponse.getHeaders.get("Access-Control-Allow-Origin") mustBe "*"
