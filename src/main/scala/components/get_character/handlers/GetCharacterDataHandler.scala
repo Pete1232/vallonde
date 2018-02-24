@@ -11,6 +11,7 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 import org.apache.logging.log4j.{LogManager, Logger}
 
+import scala.collection.JavaConverters._
 import scala.concurrent.{Await, ExecutionContext, Future, TimeoutException}
 import scala.language.postfixOps
 import scala.util.Try
@@ -45,6 +46,7 @@ class GetCharacterDataHandler(characterGetter: CharacterGetter, globalConfig: Gl
     new APIGatewayProxyResponseEvent()
       .withStatusCode(unsafeSyncResult.status)
       .withBody(unsafeSyncResult.body)
+      .withHeaders(Map("Access-Control-Allow-Origin" -> "*").asJava)
   }
 }
 
