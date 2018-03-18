@@ -147,21 +147,26 @@ Resources:
   GetCharacterDataApi:
     Type: AWS::Serverless::Api
     Properties:
-      StageName: dev
+      StageName: DEV
       DefinitionBody:
+        basePath: /DEV
         swagger: 2.0
         info:
           title:
             GetCharacterData
+        schemes:
+          - https
         paths:
           /character/{name}:
-            get:
               x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: 200
+                uri:
+                  Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetCharacterDataFunction.Arn}:DEV/invocations"
+                passthroughBehavior: when_no_match
                 httpMethod: GET
                 type: aws_proxy
-                uri:
-                  Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetCharacterDataFunction.Arn}/invocations
-              responses: {}
       Cors:
         AllowMethods: "'GET,OPTIONS'"
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
@@ -197,4 +202,4 @@ Outputs:
         - !Ref GetCharacterDataApi
         - '.execute-api.'
         - !Ref 'AWS::Region'
-        - '.amazonaws.com/Prod'
+        - '.amazonaws.com'
