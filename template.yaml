@@ -158,6 +158,7 @@ Resources:
           - https
         paths:
           /character/{name}:
+            get:
               x-amazon-apigateway-integration:
                 responses:
                   default:
