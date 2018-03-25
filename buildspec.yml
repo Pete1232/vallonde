@@ -33,5 +33,6 @@ phases:
 artifacts:
   files:
     - target/scala-2.12/vallonde-assembly-999-SNAPSHOT.jar
-    - swagger/get_character_data.yaml
     - template.yaml
+    - src/main/public/html/character.html
+    - src/main/assets/js/update_character.js
