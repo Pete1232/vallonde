@@ -1,0 +1,55 @@
+{
+  "CodePipeline.job": {
+    "id": "11111111-abcd-1111-abcd-111111abcdef",
+    "accountId": "111111111111",
+    "data": {
+      "actionConfiguration": {
+        "configuration": {
+          "FunctionName": "UploadServerlessWebsite"
+        }
+      },
+      "inputArtifacts": [
+        {
+          "location": {
+            "type": "S3",
+            "s3Location": {
+              "objectKey": "Vallonde/MyApp/SourceOutput.zip",
+              "bucketName": "codepipeline-eu-west-2-846592608297"
+            }
+          },
+          "revision": "ca1c7e78ee9015d3c5d9dcc3780c3d5284b2ae43",
+          "name": "MyApp"
+        },
+        {
+          "location": {
+            "type": "S3",
+            "s3Location": {
+              "objectKey": "Vallonde/StackOutpu/CloudFormationOutput",
+              "bucketName": "codepipeline-eu-west-2-846592608297"
+            }
+          },
+          "revision": null,
+          "name": "StackOutput"
+        }
+      ],
+      "outputArtifacts": [
+        {
+          "location": {
+            "type": "S3",
+            "s3Location": {
+              "objectKey": "Vallonde/Developmen/rtDZRJj",
+              "bucketName": "codepipeline-eu-west-2-846592608297"
+            }
+          },
+          "revision": null,
+          "name": "DevelopmentUploadOutput"
+        }
+      ],
+      "artifactCredentials": {
+        "sessionToken": "Testing",
+        "secretAccessKey": "Testing",
+        "accessKeyId": "Testing"
+      }
+    }
+  }
+}
