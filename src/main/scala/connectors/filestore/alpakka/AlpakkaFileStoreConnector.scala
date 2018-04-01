@@ -20,14 +20,10 @@ class AlpakkaFileStoreConnector()
   val s3Settings: S3Settings = S3Settings()
   val s3Client: S3Client = new S3Client(s3Settings)
 
-  override def downloadFromStore(from: AwsFileLocation, to: Path): Future[FileDownloadResult] = {
+  override def downloadFromStore(from: AwsFileLocation, to: Path): Future[Path] = {
 
     s3Client.download(from.bucket, from.key)
       .runWith(FileIO.toPath(to))
-      .map { result =>
-        result.status
-          .map(_ => FileDownloadResult(isOkay = true))
-          .getOrElse(FileDownloadResult(isOkay = false))
-      }
+      .map { _ => to }
   }
 }

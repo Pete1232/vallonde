@@ -27,18 +27,19 @@ class UploadServerlessHandlerSpec extends AsyncWordSpec with MustMatchers with A
   val testSourceLocation = "Vallonde/MyApp/SourceOutput.zip"
   val testCFLocation = "Vallonde/StackOutpu/CloudFormationOutput"
   val testJobId = "11111111-abcd-1111-abcd-111111abcdef"
-  val tmp: Path = new File("/tmp").toPath
+  val tmpSourceLocation: Path = new File(s"/tmp/$testSourceLocation").toPath
+  val tmpCFLocation: Path = new File(s"/tmp/$testCFLocation").toPath
 
   "Calling the handler" when {
     "the input json is a CloudFormation invocation request" must {
       "return the sent json" in {
         (mockFileDownloader.downloadFromStore _)
-          .expects(AwsFileLocation(testBucket, testSourceLocation), tmp)
-          .returning(Future.successful(FileDownloadResult(true)))
+          .expects(AwsFileLocation(testBucket, testSourceLocation), tmpSourceLocation)
+          .returning(Future.successful(tmpSourceLocation))
           .once()
         (mockFileDownloader.downloadFromStore _)
-          .expects(AwsFileLocation(testBucket, testCFLocation), tmp)
-          .returning(Future.successful(FileDownloadResult(true)))
+          .expects(AwsFileLocation(testBucket, testCFLocation), tmpCFLocation)
+          .returning(Future.successful(tmpCFLocation))
           .once()
 
         mockCodePipeline.sendSuccessEvent _ expects(testJobId, *) once()
@@ -47,12 +48,12 @@ class UploadServerlessHandlerSpec extends AsyncWordSpec with MustMatchers with A
       }
       "download all files specified in the request to the /tmp directory" in {
         (mockFileDownloader.downloadFromStore _)
-          .expects(AwsFileLocation(testBucket, testSourceLocation), tmp)
-          .returning(Future.successful(FileDownloadResult(true)))
+          .expects(AwsFileLocation(testBucket, testSourceLocation), tmpSourceLocation)
+          .returning(Future.successful(tmpSourceLocation))
           .once()
         (mockFileDownloader.downloadFromStore _)
-          .expects(AwsFileLocation(testBucket, testCFLocation), tmp)
-          .returning(Future.successful(FileDownloadResult(true)))
+          .expects(AwsFileLocation(testBucket, testCFLocation), tmpCFLocation)
+          .returning(Future.successful(tmpCFLocation))
           .once()
 
         mockCodePipeline.sendSuccessEvent _ expects(testJobId, *) once()
@@ -61,12 +62,12 @@ class UploadServerlessHandlerSpec extends AsyncWordSpec with MustMatchers with A
       }
       "send a success event" in {
         (mockFileDownloader.downloadFromStore _)
-          .expects(AwsFileLocation(testBucket, testSourceLocation), tmp)
-          .returning(Future.successful(FileDownloadResult(true)))
+          .expects(AwsFileLocation(testBucket, testSourceLocation), tmpSourceLocation)
+          .returning(Future.successful(tmpSourceLocation))
           .once()
         (mockFileDownloader.downloadFromStore _)
-          .expects(AwsFileLocation(testBucket, testCFLocation), tmp)
-          .returning(Future.successful(FileDownloadResult(true)))
+          .expects(AwsFileLocation(testBucket, testCFLocation), tmpCFLocation)
+          .returning(Future.successful(tmpCFLocation))
           .once()
 
         mockCodePipeline.sendSuccessEvent _ expects(testJobId, *) once()

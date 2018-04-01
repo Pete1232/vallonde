@@ -31,11 +31,11 @@ class FileStoreConnectorIT extends S3TestSuite {
     }
   }
   "Calling the upload method followed by the download method" must {
-    "download the uploaded file without failure" in {
+    "download the uploaded file without failure and return the file location" in {
 
       amazonConnector.pushToStore(testPath, testLocation)
         .flatMap(_ => alpakkaConnector.downloadFromStore(testLocation, testDownloadPath))
-        .map(_.isOkay mustBe true)
+        .map(_ mustBe testDownloadPath)
     }
     "correctly download the file without modification" in {
 

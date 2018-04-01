@@ -1,6 +1,7 @@
 package components.upload_serverless_website.handlers
 
 import java.io.File
+import java.nio.file.Path
 
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import components.upload_serverless_website.connectors.CodePipelineConnector
@@ -37,13 +38,13 @@ class UploadServerlessHandler(codePipelineConnector: CodePipelineConnector,
           }
       }
     } yield {
-      val result: Future[Vector[FileDownloadResult]] = Future.sequence {
+      val result: Future[Vector[Path]] = Future.sequence {
         fileLocations
           .map { location =>
-            fileDownloader.downloadFromStore(location, new File("/tmp").toPath)
+            fileDownloader.downloadFromStore(location, new File(s"/tmp/${location.key}").toPath)
           }
       }
-      val unsafeResult: Vector[FileDownloadResult] = Await.result(result, globalConfig.futureTimeout)
+      val unsafeResult: Seq[Path] = Await.result(result, globalConfig.futureTimeout)
       codePipelineConnector.sendSuccessEvent(jobId, SuccessDetails(jobId))
     }).fold(s"Error parsing JSON")(_ => input)
   }
