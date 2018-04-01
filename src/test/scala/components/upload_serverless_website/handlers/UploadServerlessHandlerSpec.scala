@@ -56,6 +56,11 @@ class UploadServerlessHandlerSpec extends AsyncWordSpec with MustMatchers with A
       .returning(Future.successful(FileUploadResult(FileStore.S3, Map.empty)))
     (mockFileUploader.pushToStore _)
       .expects(
+        new File("/tmp/config.js").toPath,
+        AwsFileLocation("vallonde", "src/main/assets/js/config.js"))
+      .returning(Future.successful(FileUploadResult(FileStore.S3, Map.empty)))
+    (mockFileUploader.pushToStore _)
+      .expects(
         new File(s"$extractedSourceLocation/src/main/assets/js/update_character.js").toPath,
         AwsFileLocation("vallonde-assets", "src/main/assets/js/update_character.js"))
       .returning(Future.successful(FileUploadResult(FileStore.S3, Map.empty)))
@@ -101,6 +106,29 @@ class UploadServerlessHandlerSpec extends AsyncWordSpec with MustMatchers with A
 
         mockHandler.handleRequest(testRequest, mockContext) must include("Error extracting file")
       }
+    }
+  }
+
+  "The config builder method" must {
+    "create a js config file with the api base url in the input file" in {
+      UploadServerlessHandler.buildConfigFile(
+        new File(s"$testResourcesDirectory/Vallonde/StackOutpu/vallonde-dev-stack-output.json"))
+
+      val result = new File("/tmp/config.js")
+
+      scala.io.Source.fromFile(result).mkString must include(
+        """"api-base-url" : "https://i04f64fzsi.execute-api.eu-west-2.amazonaws.com"""".stripMargin
+      )
+    }
+    "create a js config file with the correct s3 bucket url" in {
+      UploadServerlessHandler.buildConfigFile(
+        new File(s"$testResourcesDirectory/Vallonde/StackOutpu/vallonde-dev-stack-output.json"))
+
+      val result = new File("/tmp/config.js")
+
+      scala.io.Source.fromFile(result).mkString must include(
+        """"assets-uri" : "https://s3.eu-west-2.amazonaws.com/vallonde-assets/assets/js/update_character.js""".stripMargin
+      )
     }
   }
 }
