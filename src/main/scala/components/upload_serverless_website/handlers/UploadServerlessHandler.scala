@@ -1,16 +1,16 @@
 package components.upload_serverless_website.handlers
 
 import java.io.File
-import java.nio.file.Path
 
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import components.upload_serverless_website.connectors.CodePipelineConnector
 import components.upload_serverless_website.models.{S3Location, SuccessDetails}
 import config.global.GlobalConfig
-import connectors.filestore.{AwsFileLocation, FileDownloadResult, FileDownloader}
+import connectors.filestore.{AwsFileLocation, FileDownloader}
 import io.circe.generic.auto._
 import io.circe.optics.JsonPath._
 import io.circe.parser._
+import net.lingala.zip4j.core.ZipFile
 import org.apache.logging.log4j.{LogManager, Logger}
 
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -38,14 +38,22 @@ class UploadServerlessHandler(codePipelineConnector: CodePipelineConnector,
           }
       }
     } yield {
-      val result: Future[Vector[Path]] = Future.sequence {
+      val result: Future[Option[String]] = Future.sequence {
         fileLocations
           .map { location =>
             fileDownloader.downloadFromStore(location, new File(s"/tmp/${location.key}").toPath)
+              .map { zippedFile =>
+                val extractLocation = new File("/tmp")
+                val zipFile = new ZipFile(zippedFile.toFile)
+                zipFile.extractAll(extractLocation.getPath)
+                extractLocation.toPath
+              }
           }
-      }
-      val unsafeResult: Seq[Path] = Await.result(result, globalConfig.futureTimeout)
-      codePipelineConnector.sendSuccessEvent(jobId, SuccessDetails(jobId))
-    }).fold(s"Error parsing JSON")(_ => input)
+      }.map { _ =>
+        codePipelineConnector.sendSuccessEvent(jobId, SuccessDetails(jobId))
+        None
+      }.recover { case _ => Some("Error extracting file") }
+      Await.result(result, globalConfig.futureTimeout)
+    }).fold(s"Error parsing JSON")(_.getOrElse(input))
   }
 }

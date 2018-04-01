@@ -24,7 +24,7 @@
           "location": {
             "type": "S3",
             "s3Location": {
-              "objectKey": "Vallonde/StackOutpu/CloudFormationOutput",
+              "objectKey": "Vallonde/StackOutpu/CloudFormationOutput.zip",
               "bucketName": "codepipeline-eu-west-2-846592608297"
             }
           },

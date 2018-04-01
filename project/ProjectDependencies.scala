@@ -30,7 +30,8 @@ object ProjectDependencies {
 
   private val compile = aws_sdk ++ circe ++ logging ++ Seq(
     "org.scala-lang" % "scala-library" % "2.12.4",
-    "org.scalactic" %% "scalactic" % "3.0.4"
+    "org.scalactic" %% "scalactic" % "3.0.4",
+    "net.lingala.zip4j" % "zip4j" % "1.3.2"
   )
 
   private val test_common = Seq(

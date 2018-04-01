@@ -1,6 +1,7 @@
 package lt.helpers
 
 import com.amazonaws.services.lambda.model.{CreateFunctionRequest, DeleteFunctionRequest}
+import com.typesafe.config.ConfigFactory
 import lt.helpers.TestLambdaHelpers._
 import org.scalatest.{BeforeAndAfterAll, Suite}
 
@@ -11,6 +12,9 @@ trait TestLambdaSetup extends BeforeAndAfterAll {
 
   override def beforeAll(): Unit = {
     super.beforeAll()
+    System.setProperty("aws.accessKeyId", "test")
+    System.setProperty("aws.secretKey", "test")
+    ConfigFactory.invalidateCaches()
     deleteAllFunctions()
     createUpdateCharacterFunction(isMocked = true)
     createGetCharacterFunction(isMocked = true)

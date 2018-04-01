@@ -2,6 +2,7 @@ package it.helpers
 
 import akka.stream.alpakka.dynamodb.scaladsl.DynamoImplicits._
 import com.amazonaws.services.dynamodbv2.model._
+import com.typesafe.config.ConfigFactory
 import it.helpers.utilities.DynamoDatabaseConfig
 import org.scalatest.{BeforeAndAfterEach, Suite}
 import repositories.character.DefaultDynamoClient
@@ -40,6 +41,9 @@ trait TestDatabaseHelpers extends BeforeAndAfterEach {
 
   override def beforeEach(): Unit = {
     super.beforeEach()
+    System.setProperty("aws.accessKeyId", "test")
+    System.setProperty("aws.secretKey", "test")
+    ConfigFactory.invalidateCaches()
     cleanUpDatabase()
   }
 
