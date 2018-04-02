@@ -43,5 +43,19 @@ class FileStoreConnectorIT extends S3TestSuite {
         .flatMap(_ => alpakkaConnector.downloadFromStore(testLocation, testDownloadPath))
         .map(_ => computeHash(testPath) mustBe computeHash(testDownloadPath))
     }
+    "correctly download the file into a directory that didn't previously exist" in {
+
+      val testLongDownloadPath: Path = {
+        val downloadFile = new File("target/Vallonde/MyApp/Test")
+        downloadFile.deleteOnExit()
+        downloadFile.toPath
+      }
+
+      amazonConnector.pushToStore(testPath, testLocation)
+        .flatMap(_ => alpakkaConnector.downloadFromStore(testLocation, testLongDownloadPath))
+        .map { _ =>
+          testLongDownloadPath.toFile.exists() && !testLongDownloadPath.toFile.isDirectory mustBe true
+        }
+    }
   }
 }

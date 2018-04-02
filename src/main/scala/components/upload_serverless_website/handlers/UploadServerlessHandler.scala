@@ -44,7 +44,7 @@ class UploadServerlessHandler(codePipelineConnector: CodePipelineConnector,
         logger.debug(s"Downloading files $fileLocations")
         fileLocations
           .map { location =>
-            fileDownloader.downloadFromStore(location, new File(s"/tmp/${location.key.split('/').last}").toPath)
+            fileDownloader.downloadFromStore(location, new File(s"/tmp/${location.key}").toPath)
               .map { zippedFile =>
                 val extractLocation = new File("/tmp")
                 val zipFile = new ZipFile(zippedFile.toFile)

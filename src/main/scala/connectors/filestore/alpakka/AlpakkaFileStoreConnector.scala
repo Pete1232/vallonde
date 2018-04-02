@@ -21,7 +21,8 @@ class AlpakkaFileStoreConnector()
   val s3Client: S3Client = new S3Client(s3Settings)
 
   override def downloadFromStore(from: AwsFileLocation, to: Path): Future[Path] = {
-
+    val parent = to.toFile.getParentFile
+    if(!parent.exists()) parent.mkdirs()
     s3Client.download(from.bucket, from.key)
       .runWith(FileIO.toPath(to))
       .map { _ => to }
