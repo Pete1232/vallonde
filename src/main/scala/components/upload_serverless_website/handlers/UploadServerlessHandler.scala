@@ -20,8 +20,8 @@ class UploadServerlessHandler(codePipelineConnector: CodePipelineConnector,
                               fileDownloader: FileDownloader[AwsFileLocation],
                               fileUploader: FileUploader[AwsFileLocation],
                               globalConfig: GlobalConfig)
-                             (implicit ec: ExecutionContext) extends RequestHandler[String, String] {
-  override def handleRequest(input: String, context: Context): String = {
+                             (implicit ec: ExecutionContext) {
+  def handleRequest(input: String, context: Context): String = {
 
     val logger: Logger = LogManager.getLogger(this.getClass)
 
@@ -41,15 +41,19 @@ class UploadServerlessHandler(codePipelineConnector: CodePipelineConnector,
       }
     } yield {
       val result: Future[Option[String]] = Future.sequence {
+        logger.debug(s"Downloading files $fileLocations")
         fileLocations
           .map { location =>
-            fileDownloader.downloadFromStore(location, new File(s"/tmp/${location.key}").toPath)
+            fileDownloader.downloadFromStore(location, new File(s"/tmp/${location.key.split('/').last}").toPath)
               .map { zippedFile =>
                 val extractLocation = new File("/tmp")
                 val zipFile = new ZipFile(zippedFile.toFile)
                 zipFile.extractAll(extractLocation.getPath)
                 extractLocation.toPath
-              }
+              }.recover { case t: Throwable =>
+              logger.error("Runtime error downloading file", t)
+                throw t
+            }
           }
       }.map { _ =>
         val pageUpload = fileUploader.pushToStore(
@@ -77,8 +81,9 @@ class UploadServerlessHandler(codePipelineConnector: CodePipelineConnector,
         .map { _ =>
           codePipelineConnector.sendSuccessEvent(jobId, SuccessEventDetails(jobId))
           None
-        }.recover { case _ =>
+        }.recover { case t: Throwable =>
         val message = "Error extracting file"
+        logger.error("Runtime error when uploading files", t)
         codePipelineConnector.sendFailureEvent(jobId, FailureEventDetails(message))
         Some(message)
       }

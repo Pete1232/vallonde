@@ -6,7 +6,7 @@ import components.upload_serverless_website.models.{FailureEventDetails, Success
 
 class DefaultCodePipelineConnector extends CodePipelineConnector {
 
-  val client: AWSCodePipeline = AWSCodePipelineClientBuilder.standard().build()
+  val client: AWSCodePipeline = AWSCodePipelineClientBuilder.defaultClient()
 
   override def sendSuccessEvent(jobId: String, successDetails: SuccessEventDetails): Unit = {
     client.putJobSuccessResult(
