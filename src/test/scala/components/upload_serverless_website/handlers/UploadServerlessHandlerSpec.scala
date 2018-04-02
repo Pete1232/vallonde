@@ -4,6 +4,7 @@ import java.io.File
 import java.nio.file.Path
 
 import com.amazonaws.services.lambda.runtime.Context
+import com.amazonaws.services.s3.model.{GroupGrantee, Permission}
 import components.upload_serverless_website.connectors.CodePipelineConnector
 import components.upload_serverless_website.models.FailureEventDetails
 import config.global.GlobalConfig
@@ -53,12 +54,14 @@ class UploadServerlessHandlerSpec extends AsyncWordSpec with MustMatchers with A
     (mockFileUploader.pushToStore _)
       .expects(
         new File(s"$extractedSourceLocation/src/main/public/html/character.html").toPath,
-        AwsFileLocation("vallonde", "src/main/public/html/character.html"))
+        AwsFileLocation("vallonde", "src/main/public/html/character.html",
+          Seq(GrantedPermission(GroupGrantee.AllUsers, Permission.Read))))
       .returning(Future.successful(FileUploadResult(FileStore.S3, Map.empty)))
     (mockFileUploader.pushToStore _)
       .expects(
         new File("/tmp/config.js").toPath,
-        AwsFileLocation("vallonde", "src/main/assets/js/config.js"))
+        AwsFileLocation("vallonde", "src/main/assets/js/config.js",
+          Seq(GrantedPermission(GroupGrantee.AllUsers, Permission.Read))))
       .returning(Future.successful(FileUploadResult(FileStore.S3, Map.empty)))
     (mockFileUploader.pushToStore _)
       .expects(

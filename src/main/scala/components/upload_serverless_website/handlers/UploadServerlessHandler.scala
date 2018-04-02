@@ -2,11 +2,12 @@ package components.upload_serverless_website.handlers
 
 import java.io.{File, FileOutputStream}
 
-import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
+import com.amazonaws.services.lambda.runtime.Context
+import com.amazonaws.services.s3.model.{GroupGrantee, Permission}
 import components.upload_serverless_website.connectors.CodePipelineConnector
 import components.upload_serverless_website.models.{FailureEventDetails, S3Location, SuccessEventDetails}
 import config.global.GlobalConfig
-import connectors.filestore.{AwsFileLocation, FileDownloader, FileUploader}
+import connectors.filestore.{AwsFileLocation, FileDownloader, FileUploader, GrantedPermission}
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.optics.JsonPath._
@@ -52,20 +53,22 @@ class UploadServerlessHandler(codePipelineConnector: CodePipelineConnector,
                 extractLocation.toPath
               }.recover { case t: Throwable =>
               logger.error("Runtime error downloading file", t)
-                throw t
+              throw t
             }
           }
       }.map { _ =>
         val pageUpload = fileUploader.pushToStore(
           new File("/tmp/SourceOutput/src/main/public/html/character.html").toPath,
-          AwsFileLocation("vallonde", "src/main/public/html/character.html")
+          AwsFileLocation("vallonde", "src/main/public/html/character.html",
+            Seq(GrantedPermission(GroupGrantee.AllUsers, Permission.Read)))
         )
         val configUpload = {
           UploadServerlessHandler.buildConfigFile(
             new File("/tmp/vallonde-dev-stack-output.json"))
           fileUploader.pushToStore(
             new File("/tmp/config.js").toPath,
-            AwsFileLocation("vallonde", "src/main/assets/js/config.js")
+            AwsFileLocation("vallonde", "src/main/assets/js/config.js",
+              Seq(GrantedPermission(GroupGrantee.AllUsers, Permission.Read)))
           )
         }
         val assetsUpload = fileUploader.pushToStore(
