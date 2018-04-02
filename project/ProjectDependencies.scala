@@ -9,6 +9,7 @@ object ProjectDependencies {
   private val aws_sdk = Seq(
     "com.amazonaws" % "aws-lambda-java-core" % "1.2.0",
     "com.amazonaws" % "aws-lambda-java-events" % "2.0.2",
+    "com.amazonaws" % "aws-java-sdk-codepipeline" % "1.11.226",
     "com.lightbend.akka" %% "akka-stream-alpakka-dynamodb" % alpakkaVersion,
     "com.lightbend.akka" %% "akka-stream-alpakka-s3" % alpakkaVersion
   )

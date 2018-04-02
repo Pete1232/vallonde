@@ -4,7 +4,7 @@ import java.io.{File, FileOutputStream}
 
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import components.upload_serverless_website.connectors.CodePipelineConnector
-import components.upload_serverless_website.models.{S3Location, SuccessDetails}
+import components.upload_serverless_website.models.{S3Location, SuccessEventDetails}
 import config.global.GlobalConfig
 import connectors.filestore.{AwsFileLocation, FileDownloader, FileUploader}
 import io.circe.Json
@@ -75,7 +75,7 @@ class UploadServerlessHandler(codePipelineConnector: CodePipelineConnector,
         } yield (): Unit
       }
         .map { _ =>
-          codePipelineConnector.sendSuccessEvent(jobId, SuccessDetails(jobId))
+          codePipelineConnector.sendSuccessEvent(jobId, SuccessEventDetails(jobId))
           None
         }.recover { case _ => Some("Error extracting file") }
       Await.result(result, globalConfig.futureTimeout)

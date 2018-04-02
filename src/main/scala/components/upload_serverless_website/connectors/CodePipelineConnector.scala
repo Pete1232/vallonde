@@ -1,10 +1,10 @@
 package components.upload_serverless_website.connectors
 
-import components.upload_serverless_website.models.{FailureDetails, SuccessDetails}
+import components.upload_serverless_website.models.{FailureEventDetails, SuccessEventDetails}
 
 trait CodePipelineConnector {
 
-  def sendSuccessEvent(jobId: String, successDetails: SuccessDetails): Unit
+  def sendSuccessEvent(jobId: String, successDetails: SuccessEventDetails): Unit
 
-  def sendFailureEvent(jobId: String, failureDetails: FailureDetails): Unit
+  def sendFailureEvent(jobId: String, failureDetails: FailureEventDetails): Unit
 }
