@@ -5,6 +5,7 @@ import java.nio.file.Path
 
 import com.amazonaws.services.lambda.runtime.Context
 import components.upload_serverless_website.connectors.CodePipelineConnector
+import components.upload_serverless_website.models.FailureEventDetails
 import config.global.GlobalConfig
 import connectors.filestore._
 import org.apache.logging.log4j.{LogManager, Logger}
@@ -94,7 +95,10 @@ class UploadServerlessHandlerSpec extends AsyncWordSpec with MustMatchers with A
       }
     }
     "the downloaded file could not be decompressed" must {
-      "return an error message" in {
+      "send a failure event with the error message" in {
+
+        val errorMessage = "Error extracting file"
+
         (mockFileDownloader.downloadFromStore _)
           .expects(AwsFileLocation(testBucket, testSourceLocation), tmpSourceLocation)
           .returning(Future.successful(tmpSourceLocation))
@@ -103,8 +107,9 @@ class UploadServerlessHandlerSpec extends AsyncWordSpec with MustMatchers with A
           .expects(AwsFileLocation(testBucket, testCFLocation), tmpCFLocation)
           .returning(Future.successful(tmpCFLocation))
           .once()
+        mockCodePipeline.sendFailureEvent _ expects(testJobId, FailureEventDetails(errorMessage)) once()
 
-        mockHandler.handleRequest(testRequest, mockContext) must include("Error extracting file")
+        mockHandler.handleRequest(testRequest, mockContext) must include(errorMessage)
       }
     }
   }

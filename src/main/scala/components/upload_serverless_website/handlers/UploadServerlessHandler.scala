@@ -4,7 +4,7 @@ import java.io.{File, FileOutputStream}
 
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import components.upload_serverless_website.connectors.CodePipelineConnector
-import components.upload_serverless_website.models.{S3Location, SuccessEventDetails}
+import components.upload_serverless_website.models.{FailureEventDetails, S3Location, SuccessEventDetails}
 import config.global.GlobalConfig
 import connectors.filestore.{AwsFileLocation, FileDownloader, FileUploader}
 import io.circe.Json
@@ -77,7 +77,11 @@ class UploadServerlessHandler(codePipelineConnector: CodePipelineConnector,
         .map { _ =>
           codePipelineConnector.sendSuccessEvent(jobId, SuccessEventDetails(jobId))
           None
-        }.recover { case _ => Some("Error extracting file") }
+        }.recover { case _ =>
+        val message = "Error extracting file"
+        codePipelineConnector.sendFailureEvent(jobId, FailureEventDetails(message))
+        Some(message)
+      }
       Await.result(result, globalConfig.futureTimeout)
     }).fold(s"Error parsing JSON")(_.getOrElse(input))
   }
