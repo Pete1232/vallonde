@@ -43,25 +43,24 @@ Resources:
             Action:
               - sts:AssumeRole
       Policies:
-        - PolicyName: lambda-dynamo-streams
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Action:
-                  - "dynamodb:DescribeStream"
-                  - "dynamodb:GetRecords"
-                  - "dynamodb:GetShardIterator"
-                  - "dynamodb:ListStreams"
-                Effect: Allow
-                Resource: !GetAtt CharactersTable.StreamArn
         - PolicyName: lambda-s3
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
               - Action:
-                  - "s3:*"
+                  - "s3:PutObject"
+                  - "s3:GetObject"
                 Effect: Allow
-                Resource: !GetAtt CharacterPageBucket.Arn
+                Resource: "*"
+        - PolicyName: lambda-codepipeline
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - "codepipeline:PutJobFailureResult"
+                  - "codepipeline:PutJobSuccessResult"
+                Effect: Allow
+                Resource: "*"
         - PolicyName: lambda-cloudwatch
           PolicyDocument:
             Version: '2012-10-17'
@@ -69,7 +68,7 @@ Resources:
               - Action:
                   - "logs:*"
                 Effect: Allow
-                Resource: "*"
+                Resource: "arn:aws:logs:*:*:*"
   CharactersTable:
     Type: 'AWS::DynamoDB::Table'
     Properties:
@@ -116,13 +115,83 @@ Resources:
       BucketName: vallonde-assets
       CorsConfiguration:
         CorsRules:
-          - AllowedMethods: [GET]
-            AllowedOrigins: ['http://*']  #TODO add correct origin when known
+          - AllowedMethods:
+              - GET
+            AllowedOrigins:
+              - Fn::GetAtt: CharacterPageBucket.WebsiteURL
       Tags:
         - Key: name
           Value: vallonde_bucket_assets
         - Key: application
           Value: vallonde
+  CharacterPageAssetsBucketPolicy:
+    Type: "AWS::S3::BucketPolicy"
+    Properties:
+      Bucket:
+        Ref: "CharacterPageAssetsBucket"
+      PolicyDocument:
+        Statement:
+          -
+            Action:
+              - "s3:GetObject"
+            Effect: "Allow"
+            Resource:
+              Fn::Join:
+                - ""
+                -
+                  - "arn:aws:s3:::"
+                  -
+                    Ref: "CharacterPageAssetsBucket"
+                  - "/*"
+            Principal: "*"
+            Condition:
+              StringLike:
+                aws:Referer:
+                  -
+                    Fn::Join:
+                      - ""
+                      -
+                        -
+                          Fn::GetAtt: CharacterPageBucket.WebsiteURL
+                        - "/*"
+          -
+            Action:
+              - "s3:*"
+            Effect: "Deny"
+            Resource:
+              Fn::Join:
+                - ""
+                -
+                  - "arn:aws:s3:::"
+                  -
+                    Ref: "CharacterPageAssetsBucket"
+                  - "/*"
+            Principal: "*"
+            Condition:
+              StringNotLike:
+                aws:Referer:
+                  -
+                    Fn::Join:
+                      - ""
+                      -
+                        -
+                          Fn::GetAtt: CharacterPageBucket.WebsiteURL
+                        - "/*"
+  UploadServerlessWebsite:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: UploadServerlessFunction
+      Description: Uploads static assets of a serverless website to S3
+      Handler: components.upload_serverless_website.handlers.DefaultUploadServerlessHandler
+      MemorySize: 1024
+      Timeout: 15
+      Role: !GetAtt UpdateS3Role.Arn
+      CodeUri: ./target/scala-2.12/vallonde-assembly-999-SNAPSHOT.jar
+      Runtime: java8
+      AutoPublishAlias: DEV
+      Tags:
+        name: serverless_function_upload
+        application: vallonde
   UpdateCharacterDataFunction:
     Type: 'AWS::Serverless::Function'
     Properties:

@@ -83,7 +83,7 @@ class UploadServerlessHandlerSpec extends AsyncWordSpec with MustMatchers with A
 
         mockHandler.handleRequest(testRequest, mockContext)
 
-        val outputFiles = Seq(
+        val outputFiles: Boolean = Seq(
           new File(extractedSourceLocation),
           new File(extractedCFLocation)
         ).map { file => file.deleteOnExit(); file.exists() }
@@ -135,7 +135,7 @@ class UploadServerlessHandlerSpec extends AsyncWordSpec with MustMatchers with A
       val result = new File("/tmp/config.js")
 
       scala.io.Source.fromFile(result).mkString must include(
-        """"assets-uri" : "https://s3.eu-west-2.amazonaws.com/vallonde-assets/assets/js/update_character.js""".stripMargin
+        """"assets-uri" : "https://s3.eu-west-2.amazonaws.com/vallonde-assets/src/main/assets/js/update_character.js""".stripMargin
       )
     }
   }

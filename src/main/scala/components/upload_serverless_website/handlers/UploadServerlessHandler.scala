@@ -7,7 +7,7 @@ import com.amazonaws.services.s3.model.{GroupGrantee, Permission}
 import components.upload_serverless_website.connectors.CodePipelineConnector
 import components.upload_serverless_website.models.{FailureEventDetails, S3Location, SuccessEventDetails}
 import config.global.GlobalConfig
-import connectors.filestore.{AwsFileLocation, FileDownloader, FileUploader, GrantedPermission}
+import connectors.filestore._
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.optics.JsonPath._
@@ -57,12 +57,12 @@ class UploadServerlessHandler(codePipelineConnector: CodePipelineConnector,
             }
           }
       }.map { _ =>
-        val pageUpload = fileUploader.pushToStore(
+        val pageUpload: Future[FileUploadResult] = fileUploader.pushToStore(
           new File("/tmp/SourceOutput/src/main/public/html/character.html").toPath,
           AwsFileLocation("vallonde", "src/main/public/html/character.html",
             Seq(GrantedPermission(GroupGrantee.AllUsers, Permission.Read)))
         )
-        val configUpload = {
+        val configUpload: Future[FileUploadResult] = {
           UploadServerlessHandler.buildConfigFile(
             new File("/tmp/vallonde-dev-stack-output.json"))
           fileUploader.pushToStore(
@@ -71,7 +71,7 @@ class UploadServerlessHandler(codePipelineConnector: CodePipelineConnector,
               Seq(GrantedPermission(GroupGrantee.AllUsers, Permission.Read)))
           )
         }
-        val assetsUpload = fileUploader.pushToStore(
+        val assetsUpload: Future[FileUploadResult] = fileUploader.pushToStore(
           new File("/tmp/SourceOutput/src/main/assets/js/update_character.js").toPath,
           AwsFileLocation("vallonde-assets", "src/main/assets/js/update_character.js")
         )
@@ -102,7 +102,7 @@ object UploadServerlessHandler {
       .flatMap(output => root.GetCharacterDataUrl.string.getOption(output))
       .map(x => Json.obj(
         "api-base-url" -> Json.fromString(x),
-        "assets-uri" -> Json.fromString("https://s3.eu-west-2.amazonaws.com/vallonde-assets/assets/js/update_character.js")
+        "assets-uri" -> Json.fromString("https://s3.eu-west-2.amazonaws.com/vallonde-assets/src/main/assets/js/update_character.js")
       ))
       .map(x => s"var config = ${x.toString()};")
       .foreach { x =>
