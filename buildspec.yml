@@ -13,8 +13,7 @@ phases:
       - make -v
       - apt-get install python-dev -y
       - python --version
-      - curl https://bootstrap.pypa.io/get-pip.py > get-pip.py
-      - python get-pip.py
+      - pip install -U pip
       - pip --version
       - curl -sL https://deb.nodesource.com/setup_8.x | bash -
       - apt-get install nodejs -y
