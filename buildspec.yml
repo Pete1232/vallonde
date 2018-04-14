@@ -12,6 +12,13 @@ phases:
       - python --version
       - apt-get install python-pip -y
       - pip --version
+      - curl -sL https://deb.nodesource.com/setup_8.x | bash -
+      - apt-get install nodejs -y
+      - npm --version
+      - java -version
+      - javac -version
+      - apt-get install maven -y
+      - mvn -version
       - pip install localstack
       - nohup localstack start &
   build:
