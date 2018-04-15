@@ -2,6 +2,7 @@ package components.upload_serverless_website.handlers
 
 import java.io.{File, FileOutputStream}
 
+import com.amazonaws.SdkClientException
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.s3.model.{GroupGrantee, Permission}
 import components.upload_serverless_website.connectors.CodePipelineConnector
@@ -56,9 +57,9 @@ class UploadServerlessHandler(codePipelineConnector: CodePipelineConnector,
               throw t
             }
           }
-      }.map { _ =>
+      }.flatMap { _ =>
         val pageUpload: Future[FileUploadResult] = fileUploader.pushToStore(
-          new File("/tmp/SourceOutput/src/main/public/html/character.html").toPath,
+          new File("/tmp/src/main/public/html/character.html").toPath,
           AwsFileLocation("vallonde", "src/main/public/html/character.html",
             Seq(GrantedPermission(GroupGrantee.AllUsers, Permission.Read)))
         )
@@ -72,7 +73,7 @@ class UploadServerlessHandler(codePipelineConnector: CodePipelineConnector,
           )
         }
         val assetsUpload: Future[FileUploadResult] = fileUploader.pushToStore(
-          new File("/tmp/SourceOutput/src/main/assets/js/update_character.js").toPath,
+          new File("/tmp/src/main/assets/js/update_character.js").toPath,
           AwsFileLocation("vallonde-assets", "src/main/assets/js/update_character.js")
         )
         for {
@@ -84,11 +85,17 @@ class UploadServerlessHandler(codePipelineConnector: CodePipelineConnector,
         .map { _ =>
           codePipelineConnector.sendSuccessEvent(jobId, SuccessEventDetails(jobId))
           None
-        }.recover { case t: Throwable =>
-        val message = "Error extracting file"
-        logger.error("Runtime error when uploading files", t)
-        codePipelineConnector.sendFailureEvent(jobId, FailureEventDetails(message))
-        Some(message)
+        }.recover {
+        case s3: SdkClientException =>
+          val message = "Runtime error when uploading files"
+          logger.error(message, s3)
+          codePipelineConnector.sendFailureEvent(jobId, FailureEventDetails(message))
+          Some(message)
+        case t: Throwable =>
+          val message = "Error extracting file"
+          logger.error(message, t)
+          codePipelineConnector.sendFailureEvent(jobId, FailureEventDetails(message))
+          Some(message)
       }
       Await.result(result, globalConfig.futureTimeout)
     }).fold(s"Error parsing JSON")(_.getOrElse(input))

@@ -3,6 +3,7 @@ package components.upload_serverless_website.handlers
 import java.io.File
 import java.nio.file.Path
 
+import com.amazonaws.SdkClientException
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.s3.model.{GroupGrantee, Permission}
 import components.upload_serverless_website.connectors.CodePipelineConnector
@@ -39,7 +40,7 @@ class UploadServerlessHandlerSpec extends AsyncWordSpec with MustMatchers with A
   val tmpCFLocation: Path = new File(s"/tmp/$testCFLocation").toPath
   val realSourceLocation: Path = new File(s"$testResourcesDirectory/$testSourceLocation").toPath
   val realCFLocation: Path = new File(s"$testResourcesDirectory/$testCFLocation").toPath
-  val extractedSourceLocation = "/tmp/SourceOutput"
+  val extractedSourceLocation = "/tmp"
   val extractedCFLocation = "/tmp/vallonde-dev-stack-output.json"
 
   private val setHappyPathExpectations = () => {
@@ -110,6 +111,42 @@ class UploadServerlessHandlerSpec extends AsyncWordSpec with MustMatchers with A
           .expects(AwsFileLocation(testBucket, testCFLocation), tmpCFLocation)
           .returning(Future.successful(tmpCFLocation))
           .once()
+        mockCodePipeline.sendFailureEvent _ expects(testJobId, FailureEventDetails(errorMessage)) once()
+
+        mockHandler.handleRequest(testRequest, mockContext) must include(errorMessage)
+      }
+    }
+    "the file is not downloaded to the expected location" must {
+      "send a failure event with an error message" in {
+        val errorMessage = "Runtime error when uploading files"
+
+        (mockFileDownloader.downloadFromStore _)
+          .expects(AwsFileLocation(testBucket, testSourceLocation), tmpSourceLocation)
+          .returning(Future.successful(realSourceLocation))
+          .once()
+        (mockFileDownloader.downloadFromStore _)
+          .expects(AwsFileLocation(testBucket, testCFLocation), tmpCFLocation)
+          .returning(Future.successful(realCFLocation))
+          .once()
+        (mockFileUploader.pushToStore _)
+          .expects(
+            new File(s"$extractedSourceLocation/src/main/public/html/character.html").toPath,
+            AwsFileLocation("vallonde", "src/main/public/html/character.html",
+              Seq(GrantedPermission(GroupGrantee.AllUsers, Permission.Read))))
+          .returning(Future.failed(new SdkClientException(
+            """ Unable to calculate MD5 hash: \tmp\SourceOutput\src\main\public\html\character.html (The system cannot find the path specified)"""
+          )))
+        (mockFileUploader.pushToStore _)
+          .expects(
+            new File("/tmp/config.js").toPath,
+            AwsFileLocation("vallonde", "src/main/assets/js/config.js",
+              Seq(GrantedPermission(GroupGrantee.AllUsers, Permission.Read))))
+          .returning(Future.successful(FileUploadResult(FileStore.S3, Map.empty)))
+        (mockFileUploader.pushToStore _)
+          .expects(
+            new File(s"$extractedSourceLocation/src/main/assets/js/update_character.js").toPath,
+            AwsFileLocation("vallonde-assets", "src/main/assets/js/update_character.js"))
+          .returning(Future.successful(FileUploadResult(FileStore.S3, Map.empty)))
         mockCodePipeline.sendFailureEvent _ expects(testJobId, FailureEventDetails(errorMessage)) once()
 
         mockHandler.handleRequest(testRequest, mockContext) must include(errorMessage)
