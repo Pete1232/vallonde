@@ -29,7 +29,11 @@ trait TypesafeAmazonConfigProvider extends AmazonConfigProvider {
   val configRoot: String
 
   lazy val config: Config = ConfigFactory.load()
-  lazy val proxy: Option[(String, Int)] = Try((config.getString(s"$configRoot.proxy.host"), config.getInt(s"$configRoot.proxy.port"))).toOption
+  lazy val proxy: Option[(String, Int)] = {
+    Try((config.getString(s"$configRoot.proxy.host"), config.getInt(s"$configRoot.proxy.port")))
+      .toOption
+      .flatMap(foundConfig => if (foundConfig._1.isEmpty) None else Some(foundConfig))
+  }
   lazy val defaultRegion: String = Try(config.getString(s"$configRoot.aws.default-region")).toOption.getOrElse("eu-west-2")
   lazy val isPathStyleAccess: Option[Boolean] = Try(config.getBoolean(s"$configRoot.path-style-access")).toOption
 }
