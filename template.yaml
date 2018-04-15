@@ -272,4 +272,4 @@ Outputs:
         - !Ref GetCharacterDataApi
         - '.execute-api.'
         - !Ref 'AWS::Region'
-        - '.amazonaws.com'
+        - '.amazonaws.com/DEV'
